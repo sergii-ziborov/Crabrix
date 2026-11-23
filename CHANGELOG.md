@@ -1,5 +1,20 @@
 # Changelog
 
+## 23 November — Rust for C and Node.js developers
+
+- Two new courses, 17 lessons each: Rust for C Developers and Rust for Node.js
+  Developers. Every lesson shows C or JavaScript/TypeScript next to Rust and lists
+  what changes; 26 of 34 end in a compiled port. Signed catalog 26 is bundled with
+  the 1.1.9 candidate; packs are in the `language-bridges-2026-11-23` pre-release.
+- App: `bridge-lessons-v1`. A C / Rust switcher on iPhone, side by side on iPad.
+  Finishing a bridge lesson marks the Academy lessons it covers as "Known from C"
+  or "Known from Node.js": they unlock the path and count for progress, but give
+  no XP or achievements, and their recall cards join Flashcards. Credits are in
+  backups; resetting a bridge course takes them back.
+- Website: `/learn/rust-for-c-developers/` and `/learn/rust-for-nodejs-developers/`
+  with side-by-side code, a "Skip what you already know" map, links from every
+  covered Academy lesson, and C/JavaScript highlighting.
+
 ## 5 November — Crabrix 1.1.6 submitted, local Academy projects and SEO
 
 - App 1.1.6 (129): TestFlight Internal QA and App Review, with manual publication.

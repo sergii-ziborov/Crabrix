@@ -72,6 +72,12 @@ struct LessonDetailView: View {
     let writing: RustLessonWriting
     let lessonDepth: RustLessonDepth
     let illustration: LessonIllustration?
+    /// A bridge lesson's comparison with the learner's previous language.
+    let bridge: LessonBridge?
+    /// Titles of the installed lessons this bridge lesson credits.
+    let bridgeCreditTitles: [String]
+    /// "Known from C" when a bridge lesson already credited this one.
+    let knownFrom: String?
     let courseTheme: RustCourseTheme
     let isCompleted: Bool
     let onStart: () -> Void
@@ -120,6 +126,9 @@ struct LessonDetailView: View {
         writing: RustLessonWriting,
         lessonDepth: RustLessonDepth,
         illustration: LessonIllustration? = nil,
+        bridge: LessonBridge? = nil,
+        bridgeCreditTitles: [String] = [],
+        knownFrom: String? = nil,
         courseTheme: RustCourseTheme,
         isCompleted: Bool,
         savedAnswer: Int? = nil,
@@ -135,6 +144,9 @@ struct LessonDetailView: View {
         self.writing = writing
         self.lessonDepth = lessonDepth
         self.illustration = illustration
+        self.bridge = bridge
+        self.bridgeCreditTitles = bridgeCreditTitles
+        self.knownFrom = knownFrom
         self.replayMethod = replayMethod
         self.onOpenReplay = onOpenReplay
         self.courseTheme = courseTheme
@@ -320,6 +332,21 @@ struct LessonDetailView: View {
                 tint: brief.tint
             )
 
+            if let knownFrom {
+                Label {
+                    Text("\(knownFrom). A bridge lesson already counts this one as done. Finish it here to make it a regular completion.")
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "checkmark.seal.fill")
+                }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(RustCourseTheme.bridges.primaryColor)
+                .padding(14)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RustCourseTheme.bridges.primaryColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 14))
+                .accessibilityElement(children: .combine)
+            }
+
             if let illustration,
                let image = UIImage(contentsOfFile: illustration.url.path) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -350,7 +377,8 @@ struct LessonDetailView: View {
                     }
                 }
 
-                if let example = brief.example {
+                // A bridge lesson shows its Rust example beside the other language.
+                if bridge == nil, let example = brief.example {
                     VStack(alignment: .leading, spacing: 8) {
                         formattedParagraph(example.caption)
                             .font(.caption)
@@ -359,6 +387,16 @@ struct LessonDetailView: View {
                     }
                     .padding(.top, 4)
                 }
+            }
+
+            if let bridge {
+                LessonBridgeComparison(
+                    bridge: bridge,
+                    rustCode: writing.exampleCode,
+                    rustCaption: writing.exampleCaption,
+                    creditTitles: bridgeCreditTitles,
+                    tint: brief.tint
+                )
             }
 
             if replayMethod != nil, onOpenReplay != nil {
@@ -729,6 +767,113 @@ struct LessonDetailView: View {
                 }
             }
         }
+        }
+    }
+}
+
+/// The other language beside Rust. iPad shows both panes at once; a phone
+/// switches between them so neither snippet wraps into an unreadable column.
+private struct LessonBridgeComparison: View {
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var showsRust = false
+    let bridge: LessonBridge
+    let rustCode: String
+    let rustCaption: String
+    let creditTitles: [String]
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label("\(bridge.fromLabel) next to Rust", systemImage: "arrow.left.arrow.right")
+                .font(.headline)
+                .foregroundStyle(tint)
+
+            if horizontalSizeClass == .regular {
+                HStack(alignment: .top, spacing: 12) {
+                    pane(title: bridge.fromLabel, code: bridge.fromCode, path: bridge.from.snippetPath,
+                         caption: bridge.fromCaption)
+                    pane(title: "Rust", code: rustCode, path: "snippet.rs", caption: rustCaption)
+                }
+            } else {
+                Picker("Language", selection: $showsRust) {
+                    Text(bridge.fromLabel).tag(false)
+                    Text("Rust").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .accessibilityLabel("Show the \(bridge.fromLabel) or the Rust version")
+                if showsRust {
+                    pane(title: "Rust", code: rustCode, path: "snippet.rs", caption: rustCaption)
+                } else {
+                    pane(title: bridge.fromLabel, code: bridge.fromCode, path: bridge.from.snippetPath,
+                         caption: bridge.fromCaption)
+                }
+            }
+
+            contrasts
+
+            if !creditTitles.isEmpty {
+                Label {
+                    Text(creditLine)
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(RustCourseTheme.bridges.primaryColor)
+                }
+                .font(.subheadline)
+                .foregroundStyle(CrabrixTheme.primary)
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 18))
+        .overlay { RoundedRectangle(cornerRadius: 18).stroke(tint.opacity(0.25)) }
+    }
+
+    private var creditLine: String {
+        let count = creditTitles.count
+        let noun = count == 1 ? "lesson" : "lessons"
+        return "Completing this lesson also marks \(count) \(noun) as known: \(creditTitles.joined(separator: ", "))."
+    }
+
+    private func pane(title: String, code: String, path: String, caption: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(.caption2.monospaced().bold())
+                .foregroundStyle(title == "Rust" ? tint : CrabrixTheme.muted)
+                .accessibilityAddTraits(.isHeader)
+            HighlightedCodeBlock(code: code, filePath: path)
+                .accessibilityLabel("\(title) code")
+            lessonFormattedText(caption)
+                .font(.caption)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+    }
+
+    private var contrasts: some View {
+        Grid(alignment: .topLeading, horizontalSpacing: 14, verticalSpacing: 10) {
+            GridRow {
+                Text(bridge.fromLabel.uppercased())
+                Text("RUST")
+            }
+            .font(.caption2.monospaced().bold())
+            .foregroundStyle(CrabrixTheme.muted)
+            ForEach(Array(bridge.contrasts.enumerated()), id: \.offset) { _, contrast in
+                Divider().overlay(CrabrixTheme.border)
+                GridRow {
+                    lessonFormattedText(contrast.from)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    lessonFormattedText(contrast.rust, plainColor: CrabrixTheme.primary)
+                        .font(.subheadline)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("In \(bridge.fromLabel): \(contrast.from). In Rust: \(contrast.rust)")
+            }
         }
     }
 }

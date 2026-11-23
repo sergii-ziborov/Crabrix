@@ -3,7 +3,8 @@ import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
 import { lessonDescription, lessonPageModifiedDate } from "@/lib/lesson-seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { courseById, courseLessons, lessonById } from "@/lib/courses";
+import { bridgeLessonsCrediting, courseById, courseLessons, lessonById, lessonRef } from "@/lib/courses";
+import { appSupportsBridgeCredits, bridgeAudience } from "@/lib/bridges";
 import { SyntaxCode } from "@/components/SyntaxCode";
 import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
@@ -25,7 +26,10 @@ export async function generateMetadata({ params }: { params: Promise<{ course: s
   const { course: courseId, lesson: lessonId } = await params;
   const course = courseById(courseId);
   const lesson = course && lessonById(course, lessonId)?.lesson;
-  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lessonDescription(lesson), path: `/learn/${course.id}/${lesson.id}/`, kind: "article", modifiedDate: lessonPageModifiedDate(course.id, lesson.id) }) : {};
+  // A bridge lesson's side-by-side card is a better share preview than the generic one.
+  const card = course && lesson?.bridge && lesson.illustration ? `/learn-media/${course.id}/${lesson.illustration.path.slice(6)}` : undefined;
+  return lesson ? pageMetadata({ title: `${lesson.title} — ${course.title}`, description: lessonDescription(lesson), path: `/learn/${course.id}/${lesson.id}/`, kind: "article", modifiedDate: lessonPageModifiedDate(course.id, lesson.id),
+    ...(card ? { image: card, imageAlt: lesson.illustration!.alt } : {}) }) : {};
 }
 
 export default async function LessonPage({ params }: { params: Promise<{ course: string; lesson: string }> }) {
@@ -35,6 +39,10 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const found = lessonById(course, lessonId);
   if (!found) notFound();
   const { unit, lesson } = found;
+  const bridge = lesson.bridge;
+  const audience = bridge ? bridgeAudience(course.id) : undefined;
+  const credits = (bridge?.credits ?? []).flatMap(path => { const ref = lessonRef(path); return ref ? [ref] : []; });
+  const coveredBy = bridgeLessonsCrediting(course.id, lesson.id);
   const patternSteps = course.id === "algorithms" && lesson.algorithm?.patternID
     ? unit.lessons.filter(item => item.algorithm?.patternID === lesson.algorithm?.patternID) : [];
   const patternNavigation = patternSteps.length > 0 && <nav className="pattern-navigation" aria-label="Steps in this algorithm pattern">
@@ -57,6 +65,7 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
     url: pageUrl(`/learn/${course.id}/${lesson.id}/`), mainEntityOfPage: pageUrl(`/learn/${course.id}/${lesson.id}/`), isAccessibleForFree: true,
     about: { "@type": "Thing", name: lesson.concept },
     isPartOf: { "@type": "Course", name: course.title, url: pageUrl(`/learn/${course.id}/`) },
+    ...(audience ? { audience: { "@type": "Audience", audienceType: audience.audience } } : {}),
     ...(lessonPageModifiedDate(course.id, lesson.id) ? { dateModified: lessonPageModifiedDate(course.id, lesson.id) } : {}),
     author: { "@type": "Person", name: "Serhii Ziborov", url: "https://crabrix.com/about/" },
   }, breadcrumbs([{ name: "Crabrix", path: "/" }, { name: "Learn Rust", path: "/learn/" },
@@ -78,7 +87,10 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
   const index = lessons.findIndex((item) => item.id === lesson.id);
   const isBasics = course.id === "basics";
   const explanationParagraphs = writing?.explanation?.split(/\n\s*\n/) || [];
-  const exampleSection = (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
+  const exampleSection = bridge ? (writing?.practiceCode && <section><h2>The {bridge.fromLabel} habit, written in Rust</h2>
+    <p>This is how the {bridge.fromLabel} version usually looks on a first attempt in Rust. Predict what rustc says before you read the explanation.</p>
+    <SyntaxCode code={writing.practiceCode} language="rust" />
+  </section>) : (writing?.exampleCode || writing?.practiceCode) && <section><h2>Read the code</h2>
     {writing?.exampleCode && <><SyntaxCode code={writing.exampleCode} />{writing.exampleCaption && <p>{prose(writing.exampleCaption)}</p>}</>}
     {writing?.practiceCode && writing.practiceCode !== writing.exampleCode && <><h3>Practice starter</h3><SyntaxCode code={writing.practiceCode} /></>}
     {lesson.playgroundProject && <p><Link prefetch={false} className="btn" href={`/playground/?lesson=${course.id}/${lesson.id}`} target="_blank" rel="nofollow noopener">Open local example in Playground ↗</Link></p>}
@@ -96,10 +108,25 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
         <div className="academy-heading"><CourseIcon course={course.id} size={64} /><h1>{lesson.title}</h1></div>
         <p className="lede">{prose(writing?.summary || lesson.concept)}</p>
         {writing?.rule && <div className="lesson-callout"><strong>Core idea</strong><p>{prose(writing.rule)}</p></div>}
+        {coveredBy.length > 0 && <p className="bridge-note">{coveredBy.map((ref, refIndex) => <span key={ref.lesson.id}>{refIndex > 0 && " · "}
+          Coming from {bridgeAudience(ref.course.id)?.language ?? ref.lesson.bridge?.fromLabel}? <Link prefetch={false} href={`/learn/${ref.course.id}/${ref.lesson.id}`}>{ref.lesson.title}</Link> covers this side by side.</span>)}</p>}
       </div>
-      <article className="lesson-content lesson-full">
+      <article className={`lesson-content lesson-full${bridge ? " has-bridge" : ""}`}>
         {algorithmTrace && <AlgorithmVisualizer key={`${lesson.id}:${algorithmTrace.key}`} trace={algorithmTrace} practice={{href: `/playground/?lesson=${encodeURIComponent(`${course.id}/${lesson.id}`)}`, variation: depth?.transferChallenge}} />}
-        {!isBasics && lesson.illustration && <figure className="lesson-infographic">
+        {bridge && writing?.exampleCode && <section className="bridge-compare" aria-labelledby="side-by-side">
+          <h2 id="side-by-side">{bridge.fromLabel} and Rust, side by side</h2>
+          <div className="bridge-panes">
+            <figure className="bridge-pane bridge-pane-from"><figcaption><strong>{bridge.fromLabel}</strong> {prose(bridge.fromCaption)}</figcaption>
+              <SyntaxCode code={bridge.fromCode} language={bridge.from} /></figure>
+            <figure className="bridge-pane bridge-pane-rust"><figcaption><strong>Rust</strong> {prose(writing.exampleCaption || "")}</figcaption>
+              <SyntaxCode code={writing.exampleCode} language="rust" /></figure>
+          </div>
+          <table className="bridge-contrasts"><caption>What changes</caption>
+            <thead><tr><th scope="col">{bridge.fromLabel}</th><th scope="col">Rust</th></tr></thead>
+            <tbody>{bridge.contrasts.map((row, rowIndex) => <tr key={rowIndex}><td data-label={bridge.fromLabel}>{prose(row.from)}</td><td>{prose(row.rust)}</td></tr>)}</tbody>
+          </table>
+        </section>}
+        {!isBasics && !bridge && lesson.illustration && <figure className="lesson-infographic">
           <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} width={lesson.illustration.width} height={lesson.illustration.height} loading="lazy" />
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
@@ -149,6 +176,15 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           {depth.transferChallenge && <p><strong>Transfer challenge:</strong> {prose(depth.transferChallenge)}</p>}
           {depth.connections && depth.connections.length > 0 && <><h3>Connections</h3><ul>{depth.connections.map((connection, connectionIndex) => <li key={connectionIndex}><strong>{connection.title}:</strong> {connection.concept}</li>)}</ul></>}
         </section>}
+        {credits.length > 0 && <aside className="lesson-reading bridge-credits" aria-labelledby="bridge-credits">
+          <h2 id="bridge-credits">Academy lessons this covers</h2>
+          <p>This lesson teaches and checks the rule of the lessons below. If you can do its exercise, you can skip them{appSupportsBridgeCredits && audience ? <>: in the Crabrix app, finishing this lesson marks them as known from {audience.language}, and their review cards still come back in Flashcards</> : ""}.</p>
+          <ul>{credits.map(ref => <li key={`${ref.course.id}/${ref.lesson.id}`}><Link prefetch={false} href={`/learn/${ref.course.id}/${ref.lesson.id}`}>{ref.lesson.title}</Link> <small>{ref.course.title}</small></li>)}</ul>
+        </aside>}
+        {bridge && lesson.illustration && <figure className="lesson-infographic bridge-card">
+          <img src={`/learn-media/${course.id}/${lesson.illustration.path.slice(6)}`} alt={lesson.illustration.alt} width={lesson.illustration.width} height={lesson.illustration.height} loading="lazy" />
+          <figcaption>{prose(lesson.illustration.caption)}</figcaption>
+        </figure>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}
         {relatedReading}
         {patternNavigation}

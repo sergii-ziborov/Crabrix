@@ -151,6 +151,12 @@ enum CrabrixTheme {
         amber: Color(red: 0.80, green: 0.75, blue: 0.57),
         neon: Color(red: 0.58, green: 0.72, blue: 1.0)
     ) }
+    /// Bridge courses: a colour no Rust course already uses.
+    static var bridgeRose: Color { accent(
+        regular: Color(red: 0.98, green: 0.55, blue: 0.68),
+        amber: Color(red: 0.95, green: 0.66, blue: 0.52),
+        neon: Color(red: 1.0, green: 0.52, blue: 0.78)
+    ) }
     static var danger: Color { accent(
         regular: Color(red: 0.77, green: 0.14, blue: 0.18),
         amber: Color(red: 0.64, green: 0.12, blue: 0.16),
@@ -188,6 +194,7 @@ extension RustCourseTheme {
         case .systems: CrabrixTheme.violet
         case .interview: CrabrixTheme.cyan
         case .algorithms: CrabrixTheme.indigo
+        case .bridges: CrabrixTheme.bridgeRose
         }
     }
 
@@ -204,6 +211,7 @@ extension RustCourseTheme {
             case .systems: return CrabrixTheme.blue
             case .interview: return CrabrixTheme.mint
             case .algorithms: return CrabrixTheme.amber
+            case .bridges: return CrabrixTheme.cyan
             }
         }
         switch self {
@@ -214,6 +222,7 @@ extension RustCourseTheme {
         case .systems: return Color(red: 0.43, green: 0.32, blue: 0.82)
         case .interview: return Color(red: 0.08, green: 0.58, blue: 0.64)
         case .algorithms: return Color(red: 0.29, green: 0.30, blue: 0.78)
+        case .bridges: return Color(red: 0.86, green: 0.38, blue: 0.56)
         }
     }
 }

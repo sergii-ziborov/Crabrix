@@ -56,7 +56,11 @@ final class CourseBootstrapTests: XCTestCase {
         let installed = try await bootstrap.activateBundledBaseline(for: .newLearner)
         XCTAssertTrue(installed.courses.isEmpty)
         let activeCatalog = try bootstrap.bundledCatalog()
-        XCTAssertEqual(activeCatalog.courses.count, 8)
+        XCTAssertEqual(activeCatalog.courses.count, 10)
+        for bridge in ["rust-for-c-developers", "rust-for-nodejs-developers"] {
+            XCTAssertTrue(try XCTUnwrap(activeCatalog.courses.first { $0.courseID == bridge })
+                .requiredCapabilities.contains("bridge-lessons-v1"), bridge)
+        }
         // Read straight from the file so this does not need an edit per release.
         let activeCatalogBytes = try Data(contentsOf: XCTUnwrap(
             Bundle.main.url(forResource: "ActiveCourseCatalog", withExtension: nil)

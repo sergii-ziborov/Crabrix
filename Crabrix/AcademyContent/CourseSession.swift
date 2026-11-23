@@ -34,6 +34,8 @@ struct CourseLessonExecution: Sendable {
     let evidence: LessonEvidence
     let challenge: AlgorithmChallenge?
     let hint: String?
+    /// Lessons this one credits when it completes, fixed at the same snapshot.
+    let creditTargets: [String]
 
     init?(lesson: RustLesson, session: CourseSession) {
         guard lesson.id == session.lessonID,
@@ -46,6 +48,7 @@ struct CourseLessonExecution: Sendable {
         self.evidence = evidence
         challenge = session.repository.challenge(for: lesson.id)
         hint = session.repository.writing(for: lesson.id)?.rule
+        creditTargets = session.repository.creditTargets(for: lesson.id)
     }
 }
 

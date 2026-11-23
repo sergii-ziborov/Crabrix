@@ -2,7 +2,8 @@ import Foundation
 
 enum CourseCompatibility {
     static let supportedCapabilities: Set<String> = [
-        "coursepack-v1", "examples-gallery-v1", "lesson-illustrations-v1", "atlas-replay-v1", "workflow-terminal-v1"
+        "coursepack-v1", "examples-gallery-v1", "lesson-illustrations-v1", "atlas-replay-v1", "workflow-terminal-v1",
+        CourseBridgeDTO.capability
     ]
 
     static func requireSupported(_ descriptor: CourseDescriptorPayload,

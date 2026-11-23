@@ -11,6 +11,7 @@ protocol CourseRepository: Sendable {
     func evidence(for lessonID: String) -> LessonEvidence?
     func starterProject(for lessonID: String) -> CourseProjectTemplate?
     func challenge(for lessonID: String) -> AlgorithmChallenge?
+    func bridge(for lessonID: String) -> LessonBridge?
     func algorithmMethods() -> [AlgorithmMethodDTO]
     func termPairs() -> [CourseTermPairDTO]
     func showcaseProjects() -> [RustShowcaseProject]
@@ -31,6 +32,12 @@ struct LessonIllustration: Sendable {
 
 extension CourseRepository {
     func illustration(for lessonID: String) -> LessonIllustration? { nil }
+    func bridge(for lessonID: String) -> LessonBridge? { nil }
+
+    /// Installed lessons that completing `lessonID` credits as known.
+    func creditTargets(for lessonID: String) -> [String] {
+        LessonCredits.targets(for: bridge(for: lessonID), courses: courses)
+    }
 
     /// Data-only reference to a companion tree in the retained course snapshot.
     /// Opening it creates a personal project and grants no execution authority.
@@ -127,6 +134,7 @@ struct LoadedCourse: Sendable {
     let writing: [String: RustLessonWriting]
     let depth: [String: RustLessonDepth]
     let illustrations: [String: LessonIllustration]
+    let bridges: [String: LessonBridge]
     let evidence: [String: LessonEvidence]
     let projects: [String: CourseProjectTemplate]
     let challenges: [String: AlgorithmChallenge]

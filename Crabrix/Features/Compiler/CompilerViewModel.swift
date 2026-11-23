@@ -194,6 +194,9 @@ final class CompilerViewModel: ObservableObject {
     @Published private(set) var completedStages: Set<Stage> = []
     @Published private(set) var practiceCompleted = false
     @Published private(set) var completedLessonIDs: Set<String>
+    /// Lessons a completed bridge lesson vouches for: target → bridge lesson.
+    /// Never part of `completedLessonIDs`, so they earn no rating.
+    @Published private(set) var creditedLessonIDs: [String: String]
     @Published private(set) var lessonAnswerIndices: [String: Int]
     @Published private(set) var activeLessonID: String?
     private var activeLessonContent: CourseLessonExecution?
@@ -379,6 +382,7 @@ final class CompilerViewModel: ObservableObject {
         self.packageManager = packageManager
         self.userDefaults = userDefaults
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
+        creditedLessonIDs = LessonCredits.decode(userDefaults.object(forKey: LearningProgressKeys.credited))
         lessonAnswerIndices = (userDefaults.dictionary(forKey: Self.lessonAnswersKey) ?? [:])
             .compactMapValues { ($0 as? NSNumber)?.intValue }
         lessonResetDates = userDefaults.dictionary(forKey: Self.lessonResetDatesKey) as? [String: Double] ?? [:]
@@ -1944,9 +1948,22 @@ final class CompilerViewModel: ObservableObject {
         userDefaults.set(stored, forKey: Self.automaticRepairsKey)
     }
 
-    func completeLesson(_ id: String) {
+    /// Completed or credited — what the course path treats as done.
+    var learnedLessonIDs: Set<String> {
+        LessonCredits.learned(completed: completedLessonIDs, credited: creditedLessonIDs)
+    }
+
+    /// `credits` are the installed lessons a bridge lesson vouches for.
+    func completeLesson(_ id: String, credits: [String] = []) {
         completedLessonIDs.insert(id)
         persistCompletedLessons()
+        let credited = LessonCredits.completing(
+            id, targets: credits, completed: completedLessonIDs, credited: creditedLessonIDs
+        )
+        if credited != creditedLessonIDs {
+            creditedLessonIDs = credited
+            persistCreditedLessons()
+        }
     }
 
     /// Restoring learning never opens, imports or executes a project.
@@ -1959,12 +1976,25 @@ final class CompilerViewModel: ObservableObject {
         activeLessonWasResumed = false
         lessonEvidenceMessage = nil
         completedLessonIDs = Set(userDefaults.stringArray(forKey: Self.completedLessonsKey) ?? [])
+        creditedLessonIDs = LessonCredits.decode(userDefaults.object(forKey: LearningProgressKeys.credited))
     }
 
     /// Restarts only this course's lesson path. Earned rating, achievements,
     /// attempt evidence and editable projects remain intact.
-    func resetCourseProgress(lessonIDs: Set<String>) {
+    ///
+    /// Credits on these lessons are cleared, and credits granted by these
+    /// lessons are revoked. `creditTargets` lets another completed bridge
+    /// lesson keep vouching for a revoked target.
+    func resetCourseProgress(lessonIDs: Set<String>, creditTargets: (String) -> [String] = { _ in [] }) {
         guard !lessonIDs.isEmpty else { return }
+        let credited = LessonCredits.afterReset(
+            lessonIDs, completed: completedLessonIDs, credited: creditedLessonIDs,
+            creditTargets: creditTargets
+        )
+        if credited != creditedLessonIDs {
+            creditedLessonIDs = credited
+            persistCreditedLessons()
+        }
         completedLessonIDs.subtract(lessonIDs)
         lessonAnswerIndices = lessonAnswerIndices.filter { !lessonIDs.contains($0.key) }
         persistCompletedLessons()
@@ -2956,7 +2986,9 @@ final class CompilerViewModel: ObservableObject {
                 result: value,
                 passed: validation.passed
             )
-            if validation.passed { completeLesson(activeLessonID) }
+            if validation.passed {
+                completeLesson(activeLessonID, credits: activeLessonContent?.creditTargets ?? [])
+            }
         }
         Task {
             await remember(currentProject(), lastBuild: lastBuild)
@@ -2966,6 +2998,14 @@ final class CompilerViewModel: ObservableObject {
 
     private func persistCompletedLessons() {
         userDefaults.set(completedLessonIDs.sorted(), forKey: Self.completedLessonsKey)
+    }
+
+    private func persistCreditedLessons() {
+        if creditedLessonIDs.isEmpty {
+            userDefaults.removeObject(forKey: LearningProgressKeys.credited)
+        } else {
+            userDefaults.set(creditedLessonIDs, forKey: LearningProgressKeys.credited)
+        }
     }
 
     private func appendLessonAttemptEvidence(

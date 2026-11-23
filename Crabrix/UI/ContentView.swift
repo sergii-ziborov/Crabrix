@@ -318,10 +318,20 @@ struct ContentView: View {
             LearningHubView(
                 navigationPath: $learningPath,
                 completedLessonIDs: model.completedLessonIDs,
+                creditedLessonIDs: model.creditedLessonIDs,
                 lessonAnswerIndices: model.lessonAnswerIndices,
                 onStartLesson: startLesson,
-                onCompleteLesson: { lesson in model.completeLesson(lesson.id) },
-                onResetCourseProgress: model.resetCourseProgress,
+                onCompleteLesson: { lesson in
+                    model.completeLesson(
+                        lesson.id, credits: academy.repository?.creditTargets(for: lesson.id) ?? []
+                    )
+                },
+                onResetCourseProgress: { lessonIDs in
+                    let repository = academy.repository
+                    model.resetCourseProgress(lessonIDs: lessonIDs) { source in
+                        repository?.creditTargets(for: source) ?? []
+                    }
+                },
                 onAnswerLesson: { lesson, answer, correct in
                     if correct { model.recordLessonAnswer(answer, for: lesson.id) }
                 },
@@ -1624,7 +1634,7 @@ struct ContentView: View {
         guard let courses = academy.repository?.courses,
               let step = RustLessonProgression.nextStep(
                 after: model.activeLessonID,
-                completedLessonIDs: model.completedLessonIDs,
+                completedLessonIDs: model.learnedLessonIDs,
                 courses: courses
               ) else {
             learningPath = []

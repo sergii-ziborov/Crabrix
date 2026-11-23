@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { lessonDescription, lessonModifiedDates, searchDescription } from '../lib/lesson-seo.ts';
 import { pageUrl } from '../lib/seo.ts';
 const snapshot = JSON.parse(readFileSync(new URL('../content/courses.json', import.meta.url)));
-test('all 798 lessons have readable unique search descriptions without code delimiters', () => {
+test('every lessons have readable unique search descriptions without code delimiters', () => {
   const descriptions = new Set();
   let count = 0;
   for (const course of snapshot.courses) for (const unit of course.units) for (const lesson of unit.lessons) {
@@ -14,7 +14,8 @@ test('all 798 lessons have readable unique search descriptions without code deli
     assert.ok(!descriptions.has(description), lesson.id);
     descriptions.add(description); count++;
   }
-  assert.equal(count, 798);
+  assert.equal(count, snapshot.lessonCount);
+  assert.ok(count >= 798);
   assert.ok(!searchDescription('A '.repeat(100)).endsWith(' '));
   assert.equal(lessonModifiedDates['basics/strings'], '2026-11-05');
 });

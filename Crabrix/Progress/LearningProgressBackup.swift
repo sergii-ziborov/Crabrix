@@ -31,9 +31,13 @@ struct LearningProgressSnapshot: Codable, Equatable, Sendable, Identifiable {
     var termTrainSessions: Int
     var codeRecallSessions: Int
     var flashcardSessions: Int
+    /// Lessons a completed bridge lesson vouches for: target → bridge lesson.
+    /// Optional in the file, so backups from earlier builds still restore and
+    /// a learner without credits keeps byte-identical backups.
+    var creditedLessonIDs: [String: String] = [:]
 
     var hasProgress: Bool {
-        !completedLessonIDs.isEmpty || !flashcards.isEmpty
+        !completedLessonIDs.isEmpty || !creditedLessonIDs.isEmpty || !flashcards.isEmpty
             || mastery.values.contains { $0.attempts > 0 }
             || ((try? JSONDecoder().decode(CrabrixProgressState.self, from: progressData).totalPoints) ?? 0) > 0
     }
@@ -63,6 +67,8 @@ struct LearningProgressSnapshot: Codable, Equatable, Sendable, Identifiable {
               flashcards.count <= FlashcardReviewDatabase.maximumRecords,
               Set(flashcards.map(\.cardID)).count == flashcards.count,
               flashcards.allSatisfy(\.isValid),
+              creditedLessonIDs.count <= 10_000,
+              creditedLessonIDs.allSatisfy({ Self.validID($0.key) && Self.validID($0.value) && $0.key != $0.value }),
               lessonResetDates.count <= 10_000,
               lessonResetDates.allSatisfy({ Self.validID($0.key) && $0.value.isFinite && (0...7_258_118_400).contains($0.value) }),
               [termTrainSessions, codeRecallSessions, flashcardSessions].allSatisfy({ (0...1_000_000_000).contains($0) }) else {
@@ -104,6 +110,9 @@ struct LearningProgressSnapshot: Codable, Equatable, Sendable, Identifiable {
               progress.trainingBestPoints.values.allSatisfy({ (0...1_000_000).contains($0) }) else { throw LearningBackupError.invalid }
         var normalized = self
         normalized.completedLessonIDs.sort()
+        // A lesson finished for real is no longer only credited.
+        let completed = Set(completedLessonIDs)
+        normalized.creditedLessonIDs = creditedLessonIDs.filter { !completed.contains($0.key) }
         normalized.flashcards.sort { $0.cardID < $1.cardID }
         for (id, var record) in mastery {
             guard Self.validID(id), record.topic == id,
@@ -137,6 +146,52 @@ struct LearningProgressSnapshot: Codable, Equatable, Sendable, Identifiable {
 
     private static func validID(_ value: String) -> Bool {
         !value.isEmpty && value.utf8.count <= 256 && !value.contains("\0")
+    }
+}
+
+extension LearningProgressSnapshot {
+    private enum CodingKeys: String, CodingKey {
+        case schemaVersion, id, createdAt, deviceFamily, progressData, completedLessonIDs, answers
+        case mastery, flashcards, lessonResetDates, termTrainSessions, codeRecallSessions
+        case flashcardSessions, creditedLessonIDs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        id = try container.decode(String.self, forKey: .id)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        deviceFamily = try container.decode(String.self, forKey: .deviceFamily)
+        progressData = try container.decode(Data.self, forKey: .progressData)
+        completedLessonIDs = try container.decode([String].self, forKey: .completedLessonIDs)
+        answers = try container.decode([String: Int].self, forKey: .answers)
+        mastery = try container.decode([String: TopicMasteryRecord].self, forKey: .mastery)
+        flashcards = try container.decode([FlashcardReviewRecord].self, forKey: .flashcards)
+        lessonResetDates = try container.decode([String: Double].self, forKey: .lessonResetDates)
+        termTrainSessions = try container.decode(Int.self, forKey: .termTrainSessions)
+        codeRecallSessions = try container.decode(Int.self, forKey: .codeRecallSessions)
+        flashcardSessions = try container.decode(Int.self, forKey: .flashcardSessions)
+        creditedLessonIDs = try container.decodeIfPresent([String: String].self, forKey: .creditedLessonIDs) ?? [:]
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(id, forKey: .id)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(deviceFamily, forKey: .deviceFamily)
+        try container.encode(progressData, forKey: .progressData)
+        try container.encode(completedLessonIDs, forKey: .completedLessonIDs)
+        try container.encode(answers, forKey: .answers)
+        try container.encode(mastery, forKey: .mastery)
+        try container.encode(flashcards, forKey: .flashcards)
+        try container.encode(lessonResetDates, forKey: .lessonResetDates)
+        try container.encode(termTrainSessions, forKey: .termTrainSessions)
+        try container.encode(codeRecallSessions, forKey: .codeRecallSessions)
+        try container.encode(flashcardSessions, forKey: .flashcardSessions)
+        if !creditedLessonIDs.isEmpty {
+            try container.encode(creditedLessonIDs, forKey: .creditedLessonIDs)
+        }
     }
 }
 

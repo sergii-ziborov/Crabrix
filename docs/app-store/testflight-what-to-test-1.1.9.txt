@@ -1,4 +1,6 @@
-Crabrix 1.1.9: the code screen on iPhone and real questions on flashcards. Everything from 1.1.8 is included.
+Crabrix 1.1.9: Rust for C and Node.js developers, the code screen on iPhone and real questions on flashcards. Everything from 1.1.8 is included.
+
+New courses for developers who already know another language: in Learn, download "Rust for C Developers" or "Rust for Node.js Developers". Each lesson shows the C or JavaScript/TypeScript code next to the Rust version (a C / Rust switch on iPhone, side by side on iPad), lists what changes, and most lessons ask you to port the function to Rust. Finishing a lesson marks the Academy lessons it covers as "Known from C" or "Known from Node.js": they open the path and count toward course progress, but give no XP or achievements, and their questions still come back in Flashcards. Please check that the right lessons are marked and that resetting the bridge course takes the marks back.
 
 Code screen on iPhone in portrait: while a project is open, the Projects, Learn and Settings tabs are hidden and Code, Problems, Output and Terminal take their place at the bottom of the screen. Close the editor with × at the top to return to Projects. In landscape and on iPad and Duo the layout did not change.
 

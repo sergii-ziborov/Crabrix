@@ -8,6 +8,8 @@ enum RustCourseTheme: String, CaseIterable, Sendable {
     case systems
     case interview
     case algorithms
+    /// Rust for C Developers, Rust for Node.js Developers and later bridges.
+    case bridges
 }
 
 struct RustCourse: Identifiable, Sendable {

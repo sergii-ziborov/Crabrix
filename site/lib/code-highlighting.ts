@@ -1,4 +1,4 @@
-export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript" | "shell" | "go";
+export type CodeLanguage = "rust" | "toml" | "sql" | "json" | "html" | "typescript" | "javascript" | "c" | "shell" | "go";
 export type CodeToken = { value: string; kind?: string };
 
 const rustKeywords = new Set("as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while".split(" "));
@@ -12,7 +12,28 @@ export function codeLanguage(code: string): CodeLanguage {
   return "rust";
 }
 
+const cKeywords = new Set("auto break case const continue default do else enum extern for goto if inline register restrict return sizeof static struct switch typedef union volatile while _Bool _Static_assert NULL true false".split(" "));
+const cTypes = new Set("bool char double float int long short signed unsigned void size_t ssize_t ptrdiff_t intptr_t uintptr_t int8_t int16_t int32_t int64_t uint8_t uint16_t uint32_t uint64_t FILE pthread_t pthread_mutex_t errno_t".split(" "));
+
+function cTokens(code: string): CodeToken[] {
+  const pattern = /\/\/[^\n]*|\/\*[\s\S]*?\*\/|^[ \t]*#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d[\w.]*\b|\b[A-Za-z_]\w*\b/gm;
+  const result: CodeToken[] = []; let cursor = 0;
+  for (const match of code.matchAll(pattern)) {
+    const start = match.index, value = match[0];
+    if (start > cursor) result.push({ value: code.slice(cursor, start) });
+    const kind = value.startsWith("//") || value.startsWith("/*") ? "comment"
+      : value.trimStart().startsWith("#") ? "attribute"
+      : /^["']/.test(value) ? "string" : /^\d/.test(value) ? "number"
+      : cKeywords.has(value) ? "keyword" : cTypes.has(value) ? "type" : undefined;
+    result.push({ value, ...(kind ? { kind } : {}) }); cursor = start + value.length;
+  }
+  if (cursor < code.length) result.push({ value: code.slice(cursor) });
+  return result;
+}
+
 function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
+  if (language === "c") return cTokens(code);
+  if (language === "javascript") language = "typescript";
   if (["json", "html", "typescript", "shell", "go"].includes(language)) {
     const expression = language === "go"
       ? /\/\/[^\n]*|\/\*[\s\S]*?\*\/|`[^`]*`|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b/g
@@ -21,7 +42,7 @@ function tokensFor(code: string, language: CodeLanguage): CodeToken[] {
       : language === "html"
       ? /<!--[\s\S]*?-->|<\/?[A-Za-z][\w:-]*|[A-Za-z_:][\w:.-]*(?=\s*=)|"(?:\\.|[^"\\])*"|'[^']*'/g
       : /\/\/[^\n]*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b/g;
-    const keywords = new Set((language === "go" ? "break default func interface select case defer go map struct chan else goto package switch const fallthrough if range type continue for import return var true false nil" : "import from export default const let var function return if else new async await throw class extends true false null undefined type interface as typeof").split(" "));
+    const keywords = new Set((language === "go" ? "break default func interface select case defer go map struct chan else goto package switch const fallthrough if range type continue for import return var true false nil" : "import from export default const let var function return if else for of in while break continue switch case new async await throw try catch finally class extends implements readonly true false null undefined type interface as typeof").split(" "));
     const result: CodeToken[] = []; let cursor = 0;
     for (const match of code.matchAll(expression)) {
       if (match.index > cursor) result.push({ value: code.slice(cursor, match.index) });

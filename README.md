@@ -4,6 +4,21 @@
 
 [Website](https://crabrix.com) · [Next.js site and free Learn source](site/README.md) · [Support](https://crabrix.com/support/) · [Privacy](https://crabrix.com/privacy/) · [Changelog](CHANGELOG.md) · [Terms](https://crabrix.com/terms/) · [License library](https://crabrix.com/licenses/) · [App source license](LICENSE) · [Content rights](CONTENT-LICENSE.md)
 
+## Rust for C and Node.js developers — 23 November 2026
+
+- **Two bridge courses** for developers who already write another language:
+  [Rust for C Developers](https://crabrix.com/learn/rust-for-c-developers/) and
+  [Rust for Node.js Developers](https://crabrix.com/learn/rust-for-nodejs-developers/),
+  17 lessons each. Every lesson puts the familiar code next to Rust, names what changes,
+  and most end in a compiled port of that code.
+- **Skip what you know.** Each bridge lesson credits the Academy lessons whose rule it
+  taught and checked (30 per course). In the app they show as "Known from C" or
+  "Known from Node.js": they unlock the path and count for progress, but not for XP or
+  achievements, and their questions still come back in Flashcards.
+- **Checked code.** Rust with rustc 1.89 and 1.100; C with clang and sanitizers; JavaScript
+  on Node.js 22; TypeScript with `tsc --strict`.
+  [Contract and verification](https://github.com/sergii-ziborov/crabrix-courses/blob/main/editorial/bridges_20261123/SPEC.md).
+
 ## Website — 18 November 2026
 
 - **Lessons no longer jump sideways.** A lesson used to sit in a centred 850px column while its course page
