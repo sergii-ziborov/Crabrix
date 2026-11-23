@@ -1,0 +1,1226 @@
+{
+  "schemaVersion": 1,
+  "description": "Learning paths are navigation over existing Academy lessons; they never copy a lesson.",
+  "paths": [
+    {
+      "id": "rust-from-zero",
+      "title": "Rust from Zero",
+      "audience": "People who are new to Rust, or new to programming in a compiled language",
+      "description": "Start with what Rust is, then values, functions, control flow and data modelling, then ownership, abstractions, a first Cargo project and threads.",
+      "steps": [
+        {
+          "courseId": "basics",
+          "lessonId": "what-is-rust"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "hello-rust"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "variables"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "print-formatting"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "number-types"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "booleans-comparisons"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "chars-and-text"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "compiler-feedback"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "types"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "operators"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "block-expressions"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "functions"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "function-parameters"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "control-flow"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "ranges"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "loops"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "parsing"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "references-intro"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "methods-intro"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "recoverable-errors"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "debugging-values"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "comments-docs"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "structs"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "enums"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "option-result"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "collections"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "strings"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "pattern-matching"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "derive"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "ownership"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "borrowing"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "slices"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "copy-clone"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "drop-order"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes-intro"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "generics"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "traits"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "closures"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "iterators"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "iterator-impl"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "associated-types"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "operator-traits"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "modules"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "testing"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "errors"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "dependencies"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "workspaces"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "concurrency"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "channels"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "shared-state"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "send-sync"
+        }
+      ]
+    },
+    {
+      "id": "rust-for-nodejs",
+      "title": "Rust for Node.js Developers",
+      "audience": "JavaScript, TypeScript and Node.js developers",
+      "description": "The Node.js bridge course first: it puts your habits next to Rust and covers 30+ Academy lessons. Then ownership in depth, traits, error design, a CLI and an HTTP API, and async Rust with backpressure and shutdown, the parts a backend developer needs next.",
+      "steps": [
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-what-rust-is"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-no-garbage-collector"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-types-are-checked-not-erased"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-console-log-to-println"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-let-const-to-let-mut"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-number-to-integer-types"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-functions-to-fn"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-truthiness-to-bool-and-match"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-objects-to-structs"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-ts-unions-to-enums"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-null-undefined-to-option"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-array-methods-to-iterators"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-map-and-objects-to-hashmap"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-utf16-strings-to-utf8"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-shared-references-to-ownership"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-mutation-to-borrowing"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-interfaces-to-traits"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-try-catch-to-result"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-npm-to-cargo"
+        },
+        {
+          "courseId": "rust-for-nodejs-developers",
+          "lessonId": "node-promises-to-futures"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "slices"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "copy-clone"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes-intro"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "closures"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "generics"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "closure-capture-modes"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "trait-objects"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "owned-or-borrowed"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "fromstr-domain-values"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "modules"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "testing"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "error-context"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "serde-roundtrip-validation"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-arguments"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-exit"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-routing"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-json"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-idempotency"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-sql-query"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-runtime"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-patterns"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-cancellation"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "blocking-async"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "joinset-task-ownership"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "semaphore-backpressure"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "graceful-shutdown-protocol"
+        }
+      ]
+    },
+    {
+      "id": "rust-for-c",
+      "title": "Rust for C Developers",
+      "audience": "Programmers who know C: pointers, malloc and free, make",
+      "description": "The C bridge course first: it maps malloc/free, pointers, errno and tagged unions onto Rust and covers 30+ Academy lessons. Then borrowing rules in depth, smart pointers, FFI and layout, unsafe contracts, and threads with atomics.",
+      "steps": [
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-what-rust-is"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-what-safe-rust-rules-out"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-rustc-diagnostics"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-printf-to-println"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-const-by-default"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-integer-overflow-and-casts"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-functions-are-expressions"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-for-loops-to-ranges"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-malloc-free-to-ownership"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-pointers-to-references"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-pointer-length-to-slices"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-dangling-pointers-to-lifetimes"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-struct-copy-to-copy-clone"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-structs-to-impl"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-tagged-unions-to-enums"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-null-and-errno-to-option-result"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-char-arrays-to-strings"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-make-and-headers-to-cargo"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-unsafe-and-ffi"
+        },
+        {
+          "courseId": "rust-for-c-developers",
+          "lessonId": "c-pthreads-to-threads"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "mutable-borrows"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "reborrowing"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "interior-mutability-intro"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "generics"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "traits"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "trait-objects"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "iterators"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "box"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "rc-refcell"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "deref-drop"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "cycles"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "errors"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "testing"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "ffi"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "repr-layout"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "unsafe-traits"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "performance"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "benchmarking-profiling"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "wasm-linear-memory"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "channels"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "send-sync"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "scoped-threads"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "atomics-basics"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "deadlock-avoidance"
+        }
+      ]
+    },
+    {
+      "id": "rust-for-experienced",
+      "title": "Rust for Experienced Programmers",
+      "audience": "Developers fluent in another language",
+      "description": "Skip the syntax tour: what Rust is, reading rustc, then ownership, borrowing, traits and generics, errors as values, modules and tests, and the concurrency model.",
+      "steps": [
+        {
+          "courseId": "basics",
+          "lessonId": "what-is-rust"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "compiler-feedback"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "enums"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "pattern-matching"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "option-result"
+        },
+        {
+          "courseId": "basics",
+          "lessonId": "recoverable-errors"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "ownership"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "borrowing"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "slices"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "copy-clone"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes-intro"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "mutable-borrows"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "owned-or-borrowed"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "generics"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "traits"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "closures"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "iterators"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "trait-objects"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "lifetimes"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "modules"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "errors"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "testing"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "dependencies"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "concurrency"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "shared-state"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "send-sync"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "futures"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-runtime"
+        }
+      ]
+    },
+    {
+      "id": "rust-backend",
+      "title": "Rust Backend Development",
+      "audience": "Developers building CLIs, HTTP services and data pipelines",
+      "description": "Errors with context, validated data, a CLI contract, HTTP routing and JSON, SQL with transactions, diagnostics and a repeatable release, then async task ownership and backpressure.",
+      "steps": [
+        {
+          "courseId": "projects",
+          "lessonId": "errors"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "error-context"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "validated-records"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "serde-roundtrip-validation"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-arguments"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-config"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-streams"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-cli-exit"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-routing"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-limits"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-json"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-http-idempotency"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-sql-schema"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-sql-query"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-sql-parameters"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-sql-transactions"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-diag-context"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-diag-correlation"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-diag-latency"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-diag-retries"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-delivery-gates"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-delivery-config"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-delivery-artifacts"
+        },
+        {
+          "courseId": "projects",
+          "lessonId": "route-delivery-rollback"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "joinset-task-ownership"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "semaphore-backpressure"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "graceful-shutdown-protocol"
+        }
+      ]
+    },
+    {
+      "id": "async-rust",
+      "title": "Async Rust",
+      "audience": "Developers who need futures, runtimes and cancellation",
+      "description": "Futures and runtimes, join and select, pinning, cancellation safety, blocking, task ownership, backpressure and graceful shutdown, with interview questions to check understanding.",
+      "steps": [
+        {
+          "courseId": "concurrency",
+          "lessonId": "futures"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-runtime"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-patterns"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "pinning-intuition"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "async-cancellation"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "blocking-async"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "joinset-task-ownership"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "semaphore-backpressure"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "graceful-shutdown-protocol"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-vs-threads"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-blocking-async"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-cancellation"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-pin-future"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-future-send"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-locks"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-traits"
+        }
+      ]
+    },
+    {
+      "id": "systems-programming",
+      "title": "Systems Programming",
+      "audience": "Developers working close to memory, FFI and WebAssembly",
+      "description": "Macros, unsafe Rust and its invariants, FFI, layout, performance measurement and WebAssembly, with interior mutability and atomics.",
+      "steps": [
+        {
+          "courseId": "systems",
+          "lessonId": "declarative-macros"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "proc-macros"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "cfg-features"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "unsafe"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "ffi"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "performance"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "idioms"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "macro-hygiene"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "token-trees"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "proc-macro-boundaries"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "raw-pointers"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "repr-layout"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "unsafe-traits"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "benchmarking-profiling"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "wasm-host-boundaries"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "wasm-linear-memory"
+        },
+        {
+          "courseId": "systems",
+          "lessonId": "runtime-resource-budgets"
+        },
+        {
+          "courseId": "ownership",
+          "lessonId": "interior-mutability-intro"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "scoped-threads"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "mutex-poisoning"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "atomics-basics"
+        },
+        {
+          "courseId": "concurrency",
+          "lessonId": "deadlock-avoidance"
+        }
+      ]
+    },
+    {
+      "id": "rust-interview",
+      "title": "Rust Interview Preparation",
+      "audience": "Candidates preparing for Rust interviews",
+      "description": "All interview topics: language, async, systems, APIs and live coding.",
+      "steps": [
+        {
+          "courseId": "interview",
+          "lessonId": "q-ownership"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-borrowing"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-lifetimes"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-option-result"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-send-sync"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-box-rc-arc"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-dyn-generics"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-unsafe"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-atomics"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-deadlock"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-channels-vs-mutex"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-vs-threads"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-blocking-async"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-cancellation"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-stack-heap"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-virtual-memory"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-syscalls"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-tcp-udp"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-http-versions"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-tls"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-backpressure"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-acid"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-indexes"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-cap"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-idempotency"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-caching"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-complexity"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-hashmap"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-testing-strategy"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-api-design"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-perf-profiling"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-ffi-abi"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-two-sum-rust"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-lru-design"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-parser-design"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-debugging-session"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-tradeoff-communication"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-requirements"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-code-review"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-postmortem"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-interior-mutability"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-copy-clone-cow"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-utf8-boundaries"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-iterator-ownership"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-closure-traits"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-pin-future"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-future-send"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-locks"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-async-traits"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-error-boundaries"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-trait-coherence"
+        },
+        {
+          "courseId": "interview",
+          "lessonId": "q-integer-boundaries"
+        }
+      ]
+    }
+  ]
+}

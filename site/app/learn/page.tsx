@@ -38,6 +38,14 @@ export default function LearnPage() {
           ))}
         </div>
       </section>}
+      <section className="with-ai-entry" aria-labelledby="learn-with-ai">
+        <Link prefetch={false} className="course-card with-ai-card" href="/learn/with-ai/">
+          <span className="card-kicker">Optional · Claude, Codex, Cursor</span>
+          <h2 id="learn-with-ai">Learn Rust with your AI agent</h2>
+          <p>Connect your agent to Crabrix Academy: it teaches from these lessons and exercises, and you write the code. Everything here works without it, too.</p>
+          <span className="card-meta">Set up your agent →</span>
+        </Link>
+      </section>
       <div className="catalog-grid">
         {academy.map((course) => (
           <Link prefetch={false} className="course-card" href={`/learn/${course.id}`} key={course.id}>

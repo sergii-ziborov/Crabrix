@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import { pageMetadata, pageUrl, breadcrumbs } from "@/lib/seo";
+import { pageMetadata, pageUrl, breadcrumbs, siteOrigin } from "@/lib/seo";
 import { lessonDescription, lessonPageModifiedDate } from "@/lib/lesson-seo";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { bridgeLessonsCrediting, courseById, courseLessons, lessonById, lessonRef } from "@/lib/courses";
 import { appSupportsBridgeCredits, bridgeAudience } from "@/lib/bridges";
+import { lessonPrompt } from "@/lib/ai-learning";
+import { playgroundAvailable } from "@/lib/academy";
+import { CopyText } from "@/components/copy-text";
 import { SyntaxCode } from "@/components/SyntaxCode";
 import { StructuredData } from "@/components/structured-data";
 import { CourseIcon } from "@/components/course-icon";
@@ -186,6 +189,17 @@ export default async function LessonPage({ params }: { params: Promise<{ course:
           <figcaption>{prose(lesson.illustration.caption)}</figcaption>
         </figure>}
         {algorithm?.expectedAnswer && <details><summary>Reveal the Algorithm Atlas answer</summary><p><code>{algorithm.expectedAnswer}</code></p></details>}
+        {(() => {
+          const prompt = lessonPrompt({ courseId: course.id, lessonId: lesson.id, title: lesson.title,
+            goal: writing?.rule || lesson.concept, url: pageUrl(`/learn/${course.id}/${lesson.id}/`),
+            playgroundUrl: playgroundAvailable(course, lesson) ? `${siteOrigin}/playground/?lesson=${course.id}/${lesson.id}` : undefined });
+          return <details className="ai-lesson">
+            <summary>Learn this lesson with AI</summary>
+            <p>Paste this into Claude, Codex, Cursor or another agent connected to <Link prefetch={false} href="/learn/with-ai/#connect">Crabrix Academy</Link>. It contains only this lesson&rsquo;s public details.</p>
+            <pre className="ai-prompt">{prompt}</pre>
+            <CopyText text={prompt} label="Copy prompt" />
+          </details>;
+        })()}
         {relatedReading}
         {patternNavigation}
         <nav className="lesson-list" aria-label="Lesson navigation">
