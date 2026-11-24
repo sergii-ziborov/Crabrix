@@ -1,12 +1,12 @@
 # Privacy Policy
 
-Updated: 2026-11-06 · [Website copy](https://crabrix.com/privacy/)
+Updated: 2026-11-24 · [Website copy](https://crabrix.com/privacy/)
 
 The app keeps your code on your device. Website Academy accounts use a username, password and private recovery code. This page explains both.
 
-LAST UPDATED 23 NOVEMBER 2026
+LAST UPDATED 24 NOVEMBER 2026
 
-**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export a copy, enable optional private iCloud learning backup, or create/join a temporary encrypted Playground. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, optional private Apple learning backup, and optional encrypted Playground collaboration. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
+**The short version.** Crabrix has no required account or in-app analytics SDK. Your code, projects, answers, and course progress stay on your device unless you explicitly export a copy, enable optional private iCloud learning backup, create/join a temporary encrypted Playground, or connect an encrypted learning link for your AI agent. If you switch on Game Center in Profile, Crabrix sends your numeric rating and achievement ladder progress to Apple for its leaderboard and achievements. It is off by default; The app has no online profile or board of its own; website Academy accounts are separate. Other network requests are requested course downloads, package discovery and downloads, repository imports, optional private Apple learning backup, optional encrypted Playground collaboration, and an optional encrypted learning link. If you write to support — including through *Report a problem* — that email reaches a person, and this page says what happens to it.
 
 ## Who is responsible
 
@@ -114,6 +114,8 @@ To learn whether this feature helps, the website counts a few anonymous actions:
 
 The Crabrix app’s Learn with AI screen sends no analytics. When you open it, the app asks `crabrix.com/api/academy/v1/status.json`, without any identifier, whether the feature is paused. An AI Learning State you share from the app contains only what you chose: your completed lesson IDs if you switch them on, and never code, answers, room keys or credentials. It goes only where you send it.
 
+**Learning links** are off by default. You create one yourself in the app (Learn with AI → Connect my progress): a personal connector URL that you give your AI agent instead of the public Academy URL. While it is connected, the app uploads one progress snapshot: your completed and credited lesson IDs, your current and recent lessons, your weakest topics (attempts, correct answers and review dates), the versions of your installed courses, and the tutor plan the app accepted. It never contains answers, code, projects, XP or account data. The snapshot is end-to-end encrypted with a key that exists only in the link. The website stores the ciphertext, hashes of the link’s two access tokens, and when the link was created, last updated and last used; it cannot read the snapshot. Like a remote agent link, the remote MCP server decrypts it in memory only while your agent uses the link, and writes nothing of it to disk or logs. Your agent can send tutor messages through the link, encrypted the same way: lessons it assigns you and a learning focus, which the app shows as plain text under “From your AI tutor”. A message can never mark a lesson complete. Anyone who has the URL can do the same, so share it only with your agent. Disconnect in the app deletes the link, its snapshot and any waiting messages from the website at once, and a link without a snapshot upload or agent use for 90 days is deleted automatically. Requests to these endpoints are not written to the access logs, and the daily limit on creating links counts a hash of your network address that changes every day, not the address itself. Where the GDPR applies, this is processed to provide the connection you asked for.
+
 ## Optional support correspondence
 
 If you choose **Report a problem** in Settings, Crabrix composes the report on your device and opens it in your own mail app, or copies the text when you ask it to. The app sends nothing: no message exists anywhere until you press send in your mail app, and you can edit or discard the draft first.
@@ -126,7 +128,7 @@ A public [GitHub](https://github.com/sergii-ziborov/Crabrix) issue is a differen
 
 ## What the iOS app does not have
 
-There is no Crabrix account, proprietary leaderboard, online profile, or Crabrix progress server. Rating, ranks and achievements are calculated and kept on your device; optional Game Center sharing is described above. Your source code is never uploaded for compilation: the compiler runs inside the app.
+There is no Crabrix account, proprietary leaderboard, online profile, or Crabrix progress server; an optional learning link, described above, keeps only an encrypted snapshot for your AI agent that the website cannot read. Rating, ranks and achievements are calculated and kept on your device; optional Game Center sharing is described above. Your source code is never uploaded for compilation: the compiler runs inside the app.
 
 Crabrix has no remote compiler or required account. It does not provide permanent server project storage or learning-progress synchronization. Optional Playground rooms retain bounded ciphertext temporarily, as described above. Public course files are delivered by GitHub and its asset hosts; their request logs are described above.
 

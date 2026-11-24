@@ -677,6 +677,8 @@ struct ContentView: View {
             }
         }
         .onChange(of: scenePhase) { _, phase in
+            // A connected learning link syncs after a return from the background.
+            LearningLinkController.shared.scenePhaseChanged(phase)
             model.playgroundRuntime?.setForeground(phase == .active)
             if phase != .active { model.stopTypeScriptForBackground() }
             if phase == .background { model.flushPendingAutosave() }
@@ -688,6 +690,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .learningProgressRestored)) { _ in
             progress.reloadAfterRestore()
+            LearningLinkController.shared.progressDidChange()
             scoredLessonIDs = Set(UserDefaults.standard.stringArray(forKey: LearningProgressKeys.completed) ?? [])
             model.reloadLearningProgressAfterRestore()
             learningPath = []
@@ -766,6 +769,8 @@ struct ContentView: View {
                 return
             }
             let fresh = ids.subtracting(scored)
+            // Debounced; nothing happens unless a learning link is connected.
+            if ids != scored { LearningLinkController.shared.progressDidChange() }
             scoredLessonIDs = ids
             guard !fresh.isEmpty else { return }
             for lessonID in fresh {
@@ -779,6 +784,7 @@ struct ContentView: View {
             }
         }
         .onReceive(academy.$repository) { repository in
+            LearningLinkController.shared.updateRepository(repository)
             // Progress may load before the offline transition packs finish
             // activating. Backfill their verified Atlas identities once the
             // repository arrives; the store deduplicates every pattern.

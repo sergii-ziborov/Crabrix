@@ -74,7 +74,8 @@ struct LearningHubView: View {
                 navigationPath: $navigationPath,
                 completedLessonIDs: learnedLessonIDs,
                 showsPractice: true,
-                onOpenWeakTopic: openWeakTopic
+                onOpenWeakTopic: openWeakTopic,
+                officialCompletedLessonIDs: completedLessonIDs
             )
             .navigationDestination(for: LearningRoute.self) { route in
                 destination(for: route)
@@ -97,6 +98,7 @@ struct LearningHubView: View {
                        let repository = academy.repository {
                         lessonSession = CourseSession(lessonID: lessonID, repository: repository)
                     }
+                    LearningLinkController.shared.lessonDidOpen(lessonID: lessonID, repository: academy.repository)
                 } else {
                     lessonSession = nil
                 }
@@ -318,6 +320,10 @@ private struct CourseLibraryView: View {
     let completedLessonIDs: Set<String>
     let showsPractice: Bool
     let onOpenWeakTopic: (String) -> Void
+    /// The app's own completions (no credits): "From your AI tutor" marks an
+    /// assignment done only when its lesson is here.
+    var officialCompletedLessonIDs: Set<String> = []
+    @ObservedObject private var learningLink = LearningLinkController.shared
 
     private let columns = [GridItem(.adaptive(minimum: 260), spacing: 14)]
 
@@ -364,6 +370,16 @@ private struct CourseLibraryView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                if showsPractice && AcademyAIFeature.isEnabled && !learningLink.tutorPlan.isEmpty,
+                   academy.repository != nil {
+                    TutorPlanCard(
+                        link: learningLink,
+                        catalog: learningLink.catalog,
+                        completedLessonIDs: officialCompletedLessonIDs,
+                        onOpen: openTutorLesson
+                    )
+                }
+
                 if !updates.isEmpty { updateSummary }
 
                 if !academy.unavailableCourses.isEmpty { unavailableSection }
@@ -430,6 +446,8 @@ private struct CourseLibraryView: View {
         .navigationTitle(showsPractice ? "Learn" : "Courses")
         .navigationBarTitleDisplayMode(.inline)
         .task {
+            // Returns at once; does nothing unless a learning link is connected.
+            LearningLinkController.shared.learnDidAppear()
             await academy.checkForUpdates()
         }
         .toolbar {
@@ -667,6 +685,15 @@ private struct CourseLibraryView: View {
 
     private func requestRemoval(_ courseID: String, title: String) {
         pendingRemoval = (courseID, title)
+    }
+
+    /// The same route the course map and Weak Topics use.
+    private func openTutorLesson(courseID: String, lessonID: String) {
+        guard let repository = academy.repository,
+              let lesson = repository.lesson(id: lessonID),
+              let course = repository.course(containing: lesson.id), course.id == courseID
+        else { return }
+        navigationPath = [.course(course.id), .lesson(lesson.id)]
     }
 
     private func installedRow(_ course: RustCourse) -> some View {

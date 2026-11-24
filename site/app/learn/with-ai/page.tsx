@@ -28,7 +28,9 @@ const faq = [
   { q: "Which AI clients work with Crabrix Academy?",
     a: "Any MCP client that supports remote servers over Streamable HTTP or local servers over stdio: Claude on the web, desktop and mobile, Claude Code, Codex, Cursor and others." },
   { q: "Does Crabrix see my code or my chats?",
-    a: "No. The Academy server only answers requests for lessons, exercises, hints, examples and learning paths. Your code runs in the browser Playground or the Crabrix app, and your chat stays with your AI provider." },
+    a: "No. The Academy server answers requests for lessons, exercises, hints, examples and learning paths. If you connect your progress, it also passes your encrypted progress and your agent's lesson suggestions between the Crabrix app and your agent, never your code or your chat. Your code runs in the browser Playground or the Crabrix app, and your chat stays with your AI provider." },
+  { q: "Can my AI agent see my progress in the Crabrix app?",
+    a: "Only if you connect it. In the Crabrix app (1.2 or later), Learn with AI → Connect my progress creates a personal connector URL that you use instead of the public one. Your agent can then see the lessons you completed and the topics you find hardest, suggest what to learn next, and assign lessons that appear in the app as From your AI tutor. It cannot mark a lesson complete. Disconnect deletes the link and everything stored for it." },
   { q: "Can I learn Rust with AI on a phone, without a computer?",
     a: "Yes. Add the Crabrix Academy connector once in Claude on the web and use it in the Claude app, or copy a lesson prompt from this website or from the Crabrix app and paste it into your AI app." },
   { q: "Will the agent just give me the answers?",
@@ -97,7 +99,7 @@ export default function LearnWithAIPage() {
 
       <section className="unit-panel" id="connect" aria-labelledby="connect-heading">
         <h2 id="connect-heading">Connect your agent</h2>
-        <p>The Academy server is read-only and public: it serves lessons, exercises, examples and learning paths. It never sees your progress, your projects or your Playground rooms.</p>
+        <p>The Academy server is read-only and public: it serves lessons, exercises, examples and learning paths. Through this public URL it never sees your progress, your projects or your Playground rooms. To share your progress from the Crabrix app, see <a href="#connect-progress">Connect your progress</a>.</p>
         <AgentSetup clients={clients} />
       </section>
 
@@ -125,13 +127,27 @@ export default function LearnWithAIPage() {
 
       <section className="unit-panel" aria-labelledby="continue">
         <h2 id="continue">Continue where you left off</h2>
-        <p>Your progress stays where you earned it. Nothing is synchronised between the Crabrix app, this website and your agent automatically, so you choose what your agent may know:</p>
+        <p>Your progress stays where you earned it. Nothing is shared between the Crabrix app, this website and your agent unless you choose to, so you decide what your agent may know:</p>
         <ul className="learning-state-steps">
+          <li><strong>Connect your progress</strong> in the Crabrix app, so your agent always sees your latest progress: <a href="#connect-progress">see below</a>.</li>
           <li><strong>From the Crabrix app</strong> (iPhone and iPad, in the next app version): <em>Learn → Learn with AI → Continue learning</em>. Switch on <em>Include my completed lessons</em>, then copy or share your learning state and paste it into your agent with the <em>Continue learning</em> prompt. It works from a phone alone.</li>
           <li><strong>From a backup file</strong>, on a computer: with the local Academy server (<code>npx -y crabrix@{ACADEMY_SDK_VERSION} academy</code>), ask your agent to read your <code>.crabrixprogress</code> file. It is read on your computer and is not uploaded by Crabrix.</li>
           <li><strong>Without either</strong>: tell your agent which lesson you are on. It assumes nothing else.</li>
         </ul>
         <p>Your agent can keep its notes in the same file: your path, mode, current lesson, a short summary and what to review. Combining two files only ever adds the lessons the app recorded; an older or partial file never removes any, and the file never changes your progress in the app. It holds no code, room links, passwords or keys. Format: <a href="/api/academy/v1/learning-state.schema.json">AI Learning State v1</a>.</p>
+      </section>
+
+      <section className="unit-panel" id="connect-progress" aria-labelledby="connect-progress-heading">
+        <h2 id="connect-progress-heading">Connect your progress (Crabrix app)</h2>
+        <p>With Crabrix 1.2 or later on iPhone and iPad, your agent can see your real progress instead of guessing. Open <em>Learn → Learn with AI → Connect my progress</em>. The app shows exactly what it shares, then creates a personal connector URL just for you. Add that URL to your AI client the same way as above, instead of the public Academy URL.</p>
+        <ul>
+          <li>Your agent can see the lessons you completed, your current and recent lessons and the topics you find hardest.</li>
+          <li>It can suggest what to learn next, assign lessons and set a focus. They appear in the app under <em>From your AI tutor</em>, and each lesson opens as usual.</li>
+          <li>It cannot mark a lesson complete or change your answers. Only Crabrix checks in the app record progress.</li>
+          <li>Your answers, code, projects and account details are never shared. Your progress is encrypted with a key that exists only in your URL, so keep the URL private, like a password.</li>
+          <li><em>Disconnect</em> in the app deletes the link and everything stored for it. A link you stop using is deleted after 90 days.</li>
+        </ul>
+        <p className="card-meta">Details are in the <Link prefetch={false} href="/privacy/#learning-links">privacy policy</Link>.</p>
       </section>
 
       <section className="unit-panel" aria-labelledby="honest">
@@ -140,7 +156,7 @@ export default function LearnWithAIPage() {
           <li>It teaches from real Crabrix lessons and links each one, so you can always read the original.</li>
           <li>It gives hints before solutions and shows a full solution only when you ask for it.</li>
           <li>Its review is an AI review. Only Crabrix checks in the app record a lesson as passed, and the agent cannot change your progress.</li>
-          <li>It knows what you have finished only if you tell it. Nothing is synchronised between your devices and your agent automatically.</li>
+          <li>It knows what you have finished only if you tell it or connect your progress in the Crabrix app. Nothing is shared with your agent until you choose to.</li>
           <li>Code runs on your device: in the Playground or the app, and through an agent only after you allow it there.</li>
           <li>Whatever you paste into a chat goes to your agent&rsquo;s model provider under its own terms.</li>
         </ul>

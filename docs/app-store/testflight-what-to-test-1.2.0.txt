@@ -1,0 +1,9 @@
+Crabrix 1.2.0: your AI agent can now see your real Crabrix progress and send you lessons. Everything from 1.1.9 is included.
+
+Connect my progress (optional): Learn → Learn with your AI agent → Connect my progress. The screen lists exactly what is shared (completed and bridge-known lesson IDs, the current and recent lessons, installed courses with counts, up to 30 weakest practice topics, the tutor's plan) and what is never shared (answers, code, projects, XP, account, room links). Tap Connect: Crabrix makes a personal URL like https://crabrix.com/mcp/learn/… — copy it and add it to Claude (Customize → Connectors → Add custom connector), Claude Code, Codex or Cursor instead of the public Academy connector.
+
+Then ask your agent "What have I done in Crabrix and what should I learn next?" It reads your progress (crabrix_my_progress), and it can send you lessons (crabrix_assign_lessons) and a focus (crabrix_set_focus). Open Learn: they appear at the top as "From your AI tutor" with Open and dismiss buttons. The agent can never mark a lesson complete: only Crabrix's own checks do, and an assigned lesson turns done when you finish it here.
+
+Your progress is encrypted on the phone; crabrix.com stores only ciphertext. Disconnect deletes the link and everything on crabrix.com at once (if you are offline, Crabrix finishes the deletion the next time it is online).
+
+Please check: connecting and disconnecting; that the agent sees the lessons you actually finished; that assigned lessons open the right lesson; that progress, answers, XP and projects are unchanged; and that the app works as before offline and without AI.

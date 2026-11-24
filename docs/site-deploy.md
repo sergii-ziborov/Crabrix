@@ -1,5 +1,30 @@
 # Crabrix website deployment
 
+## Learning links: website API and MCP 0.7.0 — 24 November 2026
+
+The live site uses image `sha256:5b271e21…` (build `crabrix-web-learning-links-20261124`, a partial
+overlay of 9 files from `feature/learning-link` 4b51f4c); the remote MCP uses `sha256:59f26477…`
+(`crabrix-mcp-070-20261124-r2`, SDK 0.7.0 source). Rollback: site `6c85f31a…`, MCP `e7ca3c09…`.
+New: `/api/learn-links/v1/` (encrypted snapshot and tutor inbox per link, token hashes only,
+`/srv/apps/crabrix-site/accounts/learn-links.sqlite`, mode 0600, not in the accounts backup) and
+`https://crabrix.com/mcp/learn/<linkId>/<secret>`; status.json `learningLinks`; the privacy section
+"Learning links" (policy dated 24 November 2026) and "Connect your progress" on /learn/with-ai/.
+Switches: `CRABRIX_LEARN_LINKS=off` (website, 503) and `CRABRIX_ACADEMY_MCP=off` (MCP, 503).
+
+nginx: a `location ^~ /api/learn-links/` block with `access_log off` and a 300k body limit was added
+to the live `/etc/nginx/sites-available/crabrix` (the Hostwatch-managed lines kept); the previous file
+is `crabrix.before-learn-links-20261124`; `nginx -t` passed and nginx was reloaded. After the checks
+neither access log contains `learn-links` or a test link id.
+
+Disk: two retention runs freed 2.25 GB and 0.58 GB of superseded build images. For the MCP build the
+floor was lowered openly to 9.2 GiB (9.99 GB free) and restored to 10 GiB right after.
+
+Production checks: the API answers per contract (create 201/409, read/write token separation, 404 for
+wrong tokens, 308 without the trailing slash, no-store); a scripted app plus MCP client passed 22/22
+end to end; the iOS UI test `testEndToEndAgainstWebsiteAndMCP` passed against https://crabrix.com
+(connect, tutor message, card, acknowledgement, Disconnect); `/mcp/academy` still lists 11 tools; the
+production link table is empty afterwards. Evidence: `docs/ai-learning/evidence/learning-link/`.
+
 ## Learn Rust with your AI agent, Crabrix MCP 0.6.0 and five guides — 24 November 2026
 
 The live site uses image `sha256:6c85f31a…` (build `crabrix-web-ai-learning-20261124-r2`, a partial
