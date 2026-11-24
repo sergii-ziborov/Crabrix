@@ -100,7 +100,7 @@ export function playgroundAvailable(course: Course, lesson: Lesson): boolean {
 
 /**
  * Whether the released App Store version has the lesson yet. The website can run ahead of
- * the app: the bridge courses and "What Rust Is" ship with Crabrix 1.1.9. Flip with
+ * the app: the bridge courses and "What Rust Is" ship with Crabrix 1.2.0. Flip with
  * appSupportsBridgeCredits when that version is live.
  */
 export function appAvailability(courseId: string, lessonId: string): "released" | "next-app-version" {

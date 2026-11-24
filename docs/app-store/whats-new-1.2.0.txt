@@ -1,0 +1,13 @@
+Connect my progress (optional): give your AI agent a personal, private link to your real Crabrix progress. Claude, Claude Code, Codex or Cursor can then see which lessons you finished, suggest what to learn next and send lessons straight to the top of Learn under "From your AI tutor". Your progress is encrypted on your iPhone or iPad, only lesson IDs are shared, and Disconnect deletes everything. Only Crabrix's own checks can complete a lesson.
+
+Rust for C Developers and Rust for Node.js Developers: two new courses put C or JavaScript/TypeScript next to Rust, lesson by lesson. Finishing a bridge lesson marks the Academy lessons it covers as known from C or Node.js, so you can skip what you already understand.
+
+Rust Basics now starts with "What Rust Is": compiled ahead of time, no garbage collector, safe by default.
+
+Learn with your AI agent: set up Crabrix Academy in your AI client, copy ready prompts, and use "Learn this lesson with AI" on any lesson.
+
+Code screen on iPhone: while a project is open, Code, Problems, Output and Terminal sit at the bottom of the screen, with badges for new problems and results.
+
+Flashcards now ask each lesson's own questions. Swipe a course card from right to left to remove its download. Loading indicators are cleaner throughout.
+
+All existing progress, answers and projects are kept.
