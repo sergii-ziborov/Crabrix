@@ -27,10 +27,38 @@ enum AcademyAIStatus: Equatable, Sendable {
         return .paused(message: message.flatMap { $0.isEmpty || $0.count > 280 ? nil : $0 })
     }
 
+    /// Both switches from one answer. `learningLinks` is read the same way:
+    /// a missing endpoint or field means on; no answer means unknown, and the
+    /// learning-link API itself then answers 503 while paused.
+    static func interpretReport(data: Data?, response: URLResponse?) -> AcademyAIStatusReport {
+        let learnWithAI = interpret(data: data, response: response)
+        guard let http = response as? HTTPURLResponse else { return .init(learnWithAI: learnWithAI, learningLinks: .unknown) }
+        if http.statusCode == 404 { return .init(learnWithAI: learnWithAI, learningLinks: .on) }
+        guard http.statusCode == 200, let data, data.count <= 64 * 1_024,
+              let body = try? JSONDecoder().decode(Body.self, from: data) else {
+            return .init(learnWithAI: learnWithAI, learningLinks: .unknown)
+        }
+        return .init(learnWithAI: learnWithAI, learningLinks: body.learningLinks == "paused" ? .paused : .on)
+    }
+
     private struct Body: Decodable {
         let learnWithAI: String?
         let message: String?
+        let learningLinks: String?
     }
+}
+
+/// `status.json` `learningLinks: "on" | "paused"` (docs/ai-learning/learning-link.md).
+/// Paused hides Connect and stops syncing; Disconnect always stays available.
+enum LearningLinkAvailability: Equatable, Sendable {
+    case unknown
+    case on
+    case paused
+}
+
+struct AcademyAIStatusReport: Equatable, Sendable {
+    let learnWithAI: AcademyAIStatus
+    let learningLinks: LearningLinkAvailability
 }
 
 struct AcademyAIStatusClient: Sendable {
@@ -59,17 +87,29 @@ struct AcademyAIStatusClient: Sendable {
     }
 
     func fetch() async -> AcademyAIStatus {
+        await fetchReport().learnWithAI
+    }
+
+    func fetchReport() async -> AcademyAIStatusReport {
         #if DEBUG
-        if let forced = Self.launchOverride { return forced }
+        if let forced = Self.launchOverride {
+            return AcademyAIStatusReport(learnWithAI: forced, learningLinks: Self.learningLinksOverride ?? .on)
+        }
         #endif
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 5)
         request.httpShouldHandleCookies = false
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         do {
             let (data, response) = try await session.data(for: request)
-            return AcademyAIStatus.interpret(data: data, response: response)
+            let report = AcademyAIStatus.interpretReport(data: data, response: response)
+            #if DEBUG
+            if let links = Self.learningLinksOverride {
+                return AcademyAIStatusReport(learnWithAI: report.learnWithAI, learningLinks: links)
+            }
+            #endif
+            return report
         } catch {
-            return .unreachable
+            return AcademyAIStatusReport(learnWithAI: .unreachable, learningLinks: .unknown)
         }
     }
 
@@ -82,6 +122,17 @@ struct AcademyAIStatusClient: Sendable {
         case "on": return .on
         case "paused": return .paused(message: nil)
         case "offline": return .unreachable
+        default: return nil
+        }
+    }
+
+    /// `-CrabrixLearningLinks on|paused`, for screenshots and UI tests.
+    static var learningLinksOverride: LearningLinkAvailability? {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let index = arguments.firstIndex(of: "-CrabrixLearningLinks"), index + 1 < arguments.count else { return nil }
+        switch arguments[index + 1] {
+        case "on": return .on
+        case "paused": return .paused
         default: return nil
         }
     }

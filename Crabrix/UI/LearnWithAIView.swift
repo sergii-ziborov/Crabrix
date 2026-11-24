@@ -20,11 +20,14 @@ struct LearnWithAIView: View {
     let progress: @MainActor () -> AILearningState.Progress
     var flags = AILearningFlags()
     var statusClient = AcademyAIStatusClient()
+    /// "Connect my progress" (docs/ai-learning/learning-link.md).
+    @ObservedObject var learningLink: LearningLinkController = .shared
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var client: AcademyAIClient = .claude
     @State private var status: AcademyAIStatus = .checking
+    @State private var learningLinks: LearningLinkAvailability = .unknown
     /// Off on every visit: nothing about progress leaves without a choice.
     @State private var includesProgress = false
     @State private var showsFeedback = false
@@ -39,8 +42,13 @@ struct LearnWithAIView: View {
                 if showsFeedback {
                     AIFeedbackCard(flags: flags) { showsFeedback = false }
                 }
+                LearningLinkSection(link: learningLink, availability: learningLinks,
+                                    learnWithAIPaused: status.isPaused)
                 if case let .paused(message) = status {
                     pausedNotice(message)
+                } else if learningLink.isConnected {
+                    // The personal URL above replaces the public one.
+                    connectedInsteadNote
                 } else {
                     connectSection
                 }
@@ -57,10 +65,14 @@ struct LearnWithAIView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             guard status == .checking else { return }
-            status = await statusClient.fetch()
+            let report = await statusClient.fetchReport()
+            status = report.learnWithAI
+            learningLinks = report.learningLinks
+            learningLink.applyAvailability(report.learnWithAI.isPaused ? .paused : report.learningLinks)
         }
         .onAppear {
             showsFeedback = flags.shouldOfferFeedback
+            learningLink.learnDidAppear()
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
@@ -142,6 +154,15 @@ struct LearnWithAIView: View {
             AIClientSteps(client: client, onCopied: { flags.recordCopy() })
                 .id(client)
         }
+    }
+
+    private var connectedInsteadNote: some View {
+        Label("Your agent uses your personal URL above, which includes every Crabrix Academy tool. You do not need the public Academy connector as well.",
+              systemImage: "checkmark.seal.fill")
+            .font(.subheadline)
+            .foregroundStyle(CrabrixTheme.muted)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("ai-public-setup-replaced")
     }
 
     private var promptsSection: some View {
