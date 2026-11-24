@@ -171,7 +171,7 @@ struct AtlasReplayScreen: View {
                     Task { await loader.inspect(method: method, lesson: lessonID, source: source) }
                 }
                 .accessibilityIdentifier("atlas-retry-section")
-            } else { ProgressView("Reading signed section list…") }
+            } else { CrabrixLoadingView("Reading signed section list…") }
             Text("Optional data only. Removing a section keeps your progress and personal projects.")
                 .font(.caption).foregroundStyle(CrabrixTheme.muted)
         }.padding(18).crabrixPanel()

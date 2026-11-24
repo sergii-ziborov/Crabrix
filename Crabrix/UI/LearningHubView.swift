@@ -317,6 +317,8 @@ private struct CourseLibraryView: View {
     @State private var pendingDownload: CourseCatalogPayload.Entry?
     @State private var confirmUpdateAll = false
     @State private var pendingRemoval: (id: String, title: String)?
+    /// The one library card whose swipe actions are showing.
+    @State private var openSwipeCard: String?
     let completedLessonIDs: Set<String>
     let showsPractice: Bool
     let onOpenWeakTopic: (String) -> Void
@@ -388,7 +390,7 @@ private struct CourseLibraryView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("My courses").font(.title2.bold())
                         ForEach(installed) { course in
-                            installedRow(course)
+                            installedRow(course, showsSwipeHint: course.id == installed.first?.id)
                         }
                     }
                 }
@@ -430,7 +432,7 @@ private struct CourseLibraryView: View {
                     )
                     Button("Retry") { Task { await academy.prepare() } }
                 } else if academy.repository == nil {
-                    ProgressView("Preparing Academy")
+                    CrabrixLoadingView("Preparing Academy…", placement: .centered)
                 } else if available.isEmpty && installed.isEmpty && examplesEntry == nil
                             && !examplesInstalled && academy.unavailableCourses.isEmpty {
                     ContentUnavailableView("Course list unavailable", systemImage: "wifi.slash")
@@ -591,9 +593,9 @@ private struct CourseLibraryView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Code Examples").font(.title2.bold())
             if examplesInstalled {
-                SwipeRevealCard(onDelete: { requestRemoval("examples", title: "Code Examples") }) {
+                SwipeRevealCard(id: "examples", openID: $openSwipeCard, actions: examplesSwipeActions) {
                     HStack(spacing: 8) {
-                        NavigationLink(value: LearningRoute.examples) {
+                        SwipeCardLink(open: { navigationPath.append(.examples) }) {
                             HStack(spacing: 12) {
                                 examplesIcon
                                 VStack(alignment: .leading, spacing: 4) {
@@ -607,28 +609,9 @@ private struct CourseLibraryView: View {
                                     .font(.caption.bold())
                                     .foregroundStyle(CrabrixTheme.coral)
                             }
-                            .contentShape(Rectangle())
                         }
-                        .buttonStyle(.plain)
                         .accessibilityLabel("Browse 46 Code Examples, available offline")
-                        Menu {
-                            Button("Browse examples", systemImage: "square.stack.3d.up") {
-                                navigationPath.append(.examples)
-                            }
-                            if let entry = newerExamplesEntry {
-                                Button("Download latest examples", systemImage: "arrow.down.circle") {
-                                    pendingDownload = entry
-                                }
-                            }
-                            Button("Remove download", systemImage: "trash", role: .destructive) {
-                                requestRemoval("examples", title: "Code Examples")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis")
-                                .frame(width: 40, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .accessibilityLabel("Code Examples options")
+                        .swipeCardAccessibilityActions(examplesSwipeActions)
                     }
                     .padding(15)
                     .crabrixPanel(cornerRadius: 16)
@@ -696,13 +679,34 @@ private struct CourseLibraryView: View {
         navigationPath = [.course(course.id), .lesson(lesson.id)]
     }
 
-    private func installedRow(_ course: RustCourse) -> some View {
+    /// Swipe a card from right to left for what the "⋯" menu used to hold.
+    private var examplesSwipeActions: [SwipeCardAction] {
+        var actions: [SwipeCardAction] = []
+        if let entry = newerExamplesEntry {
+            actions.append(SwipeCardAction(id: "update", title: "Update", systemImage: "arrow.down.circle",
+                                           tint: CrabrixTheme.mint, accessibilityName: "Download latest examples") {
+                pendingDownload = entry
+            })
+        }
+        actions.append(.remove(accessibilityName: "Remove download") {
+            requestRemoval("examples", title: "Code Examples")
+        })
+        return actions
+    }
+
+    private func installedRow(_ course: RustCourse, showsSwipeHint: Bool = false) -> some View {
         let lessons = course.units.flatMap(\.lessons)
         let completed = lessons.filter { completedLessonIDs.contains($0.id) }.count
-        return SwipeRevealCard(onDelete: { requestRemoval(course.id, title: course.title) }) {
+        let actions: [SwipeCardAction] = [
+            .remove(accessibilityName: "Remove \(course.title) download") {
+                requestRemoval(course.id, title: course.title)
+            },
+        ]
+        return SwipeRevealCard(id: "course-\(course.id)", openID: $openSwipeCard, showsHint: showsSwipeHint,
+                               actions: actions) {
           VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                NavigationLink(value: LearningRoute.course(course.id)) {
+                SwipeCardLink(open: { navigationPath.append(.course(course.id)) }) {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 12) {
                             courseIcon(course.id, fallback: course.systemImage,
@@ -733,23 +737,10 @@ private struct CourseLibraryView: View {
                         ProgressView(value: Double(completed), total: Double(max(lessons.count, 1)))
                             .tint(course.theme.primaryColor)
                     }
-                    .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
                 .accessibilityLabel("Open \(course.title), \(completed) of \(lessons.count) lessons complete, available offline")
                 .accessibilityIdentifier("learn-open-course-\(course.id)")
-                Menu {
-                    Button("Open course", systemImage: "book") {
-                        navigationPath.append(.course(course.id))
-                    }
-                    Button("Remove download", systemImage: "trash", role: .destructive) {
-                        requestRemoval(course.id, title: course.title)
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .frame(width: 36, height: 44)
-                }
-                .accessibilityLabel("Manage download for \(course.title)")
+                .swipeCardAccessibilityActions(actions)
             }
             if course.id == "projects", academy.repository?.loaded["projects"]?.showcases.isEmpty == false {
                 NavigationLink("Open Code Examples", value: LearningRoute.examples)
@@ -957,7 +948,7 @@ private struct CourseLibraryView: View {
                 }
             }
         case .verifying:
-            ProgressView("Verifying")
+            CrabrixLoadingView("Verifying…")
         case .installed:
             Label("Available offline", systemImage: "checkmark.circle.fill")
                 .foregroundStyle(CrabrixTheme.mint)
@@ -1033,51 +1024,202 @@ private struct LearningPracticeCard: View {
     }
 }
 
-/// Reveals the same destructive action exposed by the options menu without
-/// making a vertical library scroll depend on a List container.
+/// One action behind a library card, shown when the card is swiped from right
+/// to left (what the "⋯" menu used to hold).
+struct SwipeCardAction: Identifiable {
+    let id: String
+    let title: String
+    let systemImage: String
+    let tint: Color
+    /// What VoiceOver offers as a named action on the card.
+    let accessibilityName: String
+    let perform: () -> Void
+
+    init(id: String, title: String, systemImage: String, tint: Color,
+         accessibilityName: String, perform: @escaping () -> Void) {
+        self.id = id
+        self.title = title
+        self.systemImage = systemImage
+        self.tint = tint
+        self.accessibilityName = accessibilityName
+        self.perform = perform
+    }
+
+    static func remove(accessibilityName: String, perform: @escaping () -> Void) -> SwipeCardAction {
+        SwipeCardAction(id: "remove", title: "Remove", systemImage: "trash", tint: CrabrixTheme.danger,
+                        accessibilityName: accessibilityName, perform: perform)
+    }
+}
+
+extension View {
+    /// Swipes are invisible to VoiceOver and Switch Control, so every swipe
+    /// action is also a named accessibility action on the card's main element.
+    func swipeCardAccessibilityActions(_ actions: [SwipeCardAction]) -> some View {
+        accessibilityActions {
+            ForEach(actions) { action in
+                Button(action.accessibilityName, action: action.perform)
+            }
+        }
+    }
+}
+
+/// The part of a swipeable card that opens it. A Button or NavigationLink still
+/// fires when a horizontal swipe ends inside it, so swiping a card used to open
+/// the course; a tap gesture fails as soon as the finger moves.
+private struct SwipeCardLink<Label: View>: View {
+    let open: () -> Void
+    let label: Label
+
+    init(open: @escaping () -> Void, @ViewBuilder label: () -> Label) {
+        self.open = open
+        self.label = label()
+    }
+
+    var body: some View {
+        label
+            .contentShape(Rectangle())
+            .onTapGesture(perform: open)
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction(.default, open)
+    }
+}
+
+/// A library card that follows the finger when swiped from right to left and
+/// settles open on its actions or closed again, like a list row's swipe
+/// actions, without making the vertical library depend on a List. One card is
+/// open at a time (`openID`); tapping an open card closes it instead of opening
+/// the course. The first card can peek once so the gesture is discoverable now
+/// that the "⋯" button is gone.
 private struct SwipeRevealCard<Content: View>: View {
-    @State private var revealed = false
-    let onDelete: () -> Void
+    let id: String
+    @Binding var openID: String?
+    var showsHint = false
+    let actions: [SwipeCardAction]
     let content: Content
 
-    init(onDelete: @escaping () -> Void, @ViewBuilder content: () -> Content) {
-        self.onDelete = onDelete
+    @GestureState private var drag: SwipeDrag = .idle
+    @State private var hintOffset: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage("crabrix.learn.swipeHintShown.v1") private var hintShown = false
+
+    private let actionWidth: CGFloat = 84
+
+    init(id: String, openID: Binding<String?>, showsHint: Bool = false, actions: [SwipeCardAction],
+         @ViewBuilder content: () -> Content) {
+        self.id = id
+        self._openID = openID
+        self.showsHint = showsHint
+        self.actions = actions
         self.content = content()
+    }
+
+    private enum SwipeDrag: Equatable {
+        case idle, vertical
+        case horizontal(CGFloat)
+    }
+
+    private var revealWidth: CGFloat { actionWidth * CGFloat(actions.count) }
+    private var isOpen: Bool { openID == id }
+
+    private var offset: CGFloat {
+        var x = isOpen ? -revealWidth : 0
+        if case let .horizontal(dx) = drag { x += dx }
+        x += hintOffset
+        // A little give past either end, then it stops.
+        if x > 0 { return min(x * 0.25, 12) }
+        if x < -revealWidth { return -revealWidth - min((-revealWidth - x) * 0.25, 18) }
+        return x
     }
 
     var body: some View {
         content
-            .offset(x: revealed ? -90 : 0)
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 20).onEnded { gesture in
-                    guard abs(gesture.translation.width) > abs(gesture.translation.height) * 1.3 else {
-                        return
-                    }
-                    if gesture.translation.width < -45 {
-                        withAnimation(.easeOut(duration: 0.2)) { revealed = true }
-                    } else if gesture.translation.width > 35 {
-                        withAnimation(.easeOut(duration: 0.2)) { revealed = false }
-                    }
-                }
-            )
-            .background(alignment: .trailing) {
-                GeometryReader { geometry in
-                    Button {
-                        revealed = false
-                        onDelete()
-                    } label: {
-                        Label("Remove", systemImage: "trash")
-                            .font(.caption.bold())
-                            .frame(width: 90, height: geometry.size.height)
-                    }
-                    .foregroundStyle(.white)
-                    .background(CrabrixTheme.danger)
-                    .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                    .accessibilityLabel("Remove downloaded material")
+            .overlay {
+                if isOpen {
+                    // An open card closes on a tap instead of opening the course.
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture { close() }
+                        .accessibilityHidden(true)
                 }
             }
+            .offset(x: offset)
+            .simultaneousGesture(swipe)
+            .background(alignment: .trailing) { actionButtons }
             .clipShape(CrabrixCardShape(cornerRadius: 16))
-            .accessibilityAction(named: "Remove download", onDelete)
+            .animation(.interactiveSpring(response: 0.28, dampingFraction: 0.86), value: drag)
+            .task(id: showsHint) { await peekOnce() }
+    }
+
+    private var actionButtons: some View {
+        HStack(spacing: 0) {
+            ForEach(actions) { action in
+                Button {
+                    close()
+                    action.perform()
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: action.systemImage).font(.body.weight(.semibold))
+                        Text(action.title).font(.caption.bold())
+                    }
+                    .foregroundStyle(.white)
+                    .frame(width: actionWidth)
+                    .frame(maxHeight: .infinity)
+                    .background(action.tint)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityHidden(true) // offered as named actions on the card
+            }
+        }
+        .frame(width: revealWidth)
+        .frame(maxHeight: .infinity)
+        .opacity(offset < -1 ? 1 : 0)
+    }
+
+    private var swipe: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .updating($drag) { value, state, _ in
+                switch state {
+                case .idle:
+                    let dx = value.translation.width, dy = value.translation.height
+                    state = abs(dx) > abs(dy) * 1.2 ? .horizontal(dx) : .vertical
+                case .horizontal:
+                    state = .horizontal(value.translation.width)
+                case .vertical:
+                    break
+                }
+            }
+            .onEnded { value in
+                let dx = value.translation.width, dy = value.translation.height
+                guard abs(dx) > abs(dy) * 1.2 else { return }
+                let start: CGFloat = isOpen ? -revealWidth : 0
+                let predicted = start + value.predictedEndTranslation.width
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) {
+                    if predicted < -revealWidth / 2 {
+                        openID = id
+                    } else if isOpen {
+                        openID = nil
+                    }
+                }
+            }
+    }
+
+    private func close() {
+        guard isOpen else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) { openID = nil }
+    }
+
+    /// Once per install, the first card slides to show its action and back.
+    private func peekOnce() async {
+        guard showsHint, !hintShown, !reduceMotion,
+              !ProcessInfo.processInfo.arguments.contains(where: { $0.hasPrefix("-Crabrix") || $0.hasPrefix("--crabrix") })
+        else { return }
+        try? await Task.sleep(for: .milliseconds(900))
+        guard !Task.isCancelled, openID == nil else { return }
+        hintShown = true
+        withAnimation(.easeOut(duration: 0.35)) { hintOffset = -min(revealWidth, 64) }
+        try? await Task.sleep(for: .milliseconds(650))
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { hintOffset = 0 }
     }
 }

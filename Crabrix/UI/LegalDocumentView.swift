@@ -46,7 +46,7 @@ struct LegalDocumentView: View {
                         .foregroundStyle(CrabrixTheme.muted)
                     Link("Open the legal pages", destination: CrabrixLinks.terms)
                 } else {
-                    ProgressView()
+                    CrabrixLoadingView("Opening document…", placement: .centered)
                 }
             }
             .textSelection(.enabled)

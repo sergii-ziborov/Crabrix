@@ -513,7 +513,7 @@ private struct GameCenterEntrySheet: View {
                             }
                             .padding(24)
                         } else {
-                            ProgressView("Connecting to Game Center…")
+                            CrabrixLoadingView("Connecting to Game Center…", placement: .centered)
                         }
                     }
                     .toolbar {

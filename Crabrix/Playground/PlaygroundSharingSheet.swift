@@ -109,7 +109,7 @@ private struct PlaygroundAgentView: View {
                     } label: { Label(copied ? "Copied" : "Copy agent link", systemImage: copied ? "checkmark" : "doc.on.doc").frame(maxWidth: .infinity) }
                         .buttonStyle(.bordered).disabled(session.expired)
                 } else if failure == nil {
-                    ProgressView("Preparing agent link…").frame(maxWidth: .infinity)
+                    CrabrixLoadingView("Preparing agent link…", placement: .centered)
                 }
                 if let failure { Text(failure).foregroundStyle(CrabrixTheme.coral) }
                 if let runtime = model.playgroundRuntime { PlaygroundRuntimePermissions(runtime: runtime) }

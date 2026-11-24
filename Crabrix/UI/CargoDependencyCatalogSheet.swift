@@ -270,7 +270,7 @@ private struct CratePackageView: View {
         VStack(alignment: .leading, spacing: 9) {
             Label("Owners", systemImage: "person.2.fill").font(.headline)
             if model.isLoading, model.owners.isEmpty {
-                ProgressView().tint(CrabrixTheme.coral)
+                CrabrixLoadingView("Loading owners…")
             } else if model.owners.isEmpty {
                 Text("Owner information is unavailable.")
                     .font(.caption)
@@ -307,7 +307,7 @@ private struct CratePackageView: View {
                 Label(error, systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(CrabrixTheme.amber)
             } else if model.isLoading {
-                ProgressView("Loading versions…").tint(CrabrixTheme.coral)
+                CrabrixLoadingView("Loading versions…")
             } else {
                 LazyVStack(spacing: 7) {
                     ForEach(model.versions) { version in
