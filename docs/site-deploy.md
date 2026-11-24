@@ -1,5 +1,16 @@
 # Crabrix website deployment
 
+## Site matches Crabrix 1.2.0; HTML sitemap fixes — 24 November 2026
+
+Image `sha256:7f384274…` (build `crabrix-web-site-120-20261124`, overlay of 7 files from main eec8eca);
+rollback `5b271e21…`. 1.1.9 was withdrawn from App Review and replaced by 1.2.0 build 140, so the blog
+guides and /learn/with-ai/ name Crabrix 1.2; llms.txt lists learning links; sitemap lastmod for privacy
+and /learn/with-ai/ is 24 November; the HTML sitemap counts 9 courses, links Learn with AI and links
+Atlas lessons canonically (no redirect). The build waited until the morning build caches passed the
+6-hour minimum age; retention then freed them and the 10 GiB floor was met without changes.
+Checks: all 910 sitemap URLs 200 with matching canonical and no noindex; all 9 courses, 839 lessons and
+45 posts listed; no page mentions 1.1.9; status.json unchanged.
+
 ## Learning links: website API and MCP 0.7.0 — 24 November 2026
 
 The live site uses image `sha256:5b271e21…` (build `crabrix-web-learning-links-20261124`, a partial
