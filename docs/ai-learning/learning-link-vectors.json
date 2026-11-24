@@ -1,0 +1,18 @@
+{
+ "secret": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+ "linkId": "AAECAwQFBgcICQoLDA0ODxAR",
+ "url": "https://crabrix.com/mcp/learn/AAECAwQFBgcICQoLDA0ODxAR/AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+ "encryptionKey": "V-e85c5ptgcNhy88c9aSaiICBtAeG4Yz7kokHY2r_us",
+ "writeToken": "5wS5TfjGuKM-DTToG8-ZXSvK8txfa86EXQnDKEkwbNM",
+ "readToken": "HN7kzUTKD_jg4ITymPJcniIdMsiX-hCC93ULYiX8_nY",
+ "writeTokenSha256": "a8f493c86c2af23a1e75357d4f7dfab3088a5f07f1f9ad45d3d172176d870645",
+ "readTokenSha256": "a4696ab1a59f76e6d820a0e26eea544449e90d79fb32b7537869419565324c8b",
+ "snapshotPlaintext": "{\"format\":\"crabrix.learning-link-snapshot\",\"schemaVersion\":1}",
+ "nonce": "ZGVmZ2hpamtsbW5v",
+ "aad": "crabrix-learning-link-v1|AAECAwQFBgcICQoLDA0ODxAR|snapshot",
+ "envelope": {
+  "v": 1,
+  "nonce": "ZGVmZ2hpamtsbW5v",
+  "ct": "sbVCSviNIJw8GzVkpIHxXQq2EYG8inzocbS5iOqRQIaSOfhdrkdS7C1h45qXsJyTbV1OcnwrliRt19b8W84LM9UZIclvmcxOUwmqbDY"
+ }
+}
