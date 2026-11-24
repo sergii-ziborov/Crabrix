@@ -1,5 +1,28 @@
 # Crabrix website deployment
 
+## Learn Rust with your AI agent, Crabrix MCP 0.6.0 and five guides — 24 November 2026
+
+The live site uses image `sha256:6c85f31a…` (build `crabrix-web-ai-learning-20261124-r2`, a partial
+overlay of 92 files from `main` e7079ba); the remote MCP uses `sha256:e7ca3c09…`
+(`crabrix-mcp-060-20261124`, the SDK 0.6.0 source). Rollback: the previous site image `7fddf500…` and
+MCP image `b995973f…` are retained rollback versions. New: `/learn/with-ai/`, the Academy API
+(`/api/academy/v1/*`, `status.json`), `https://crabrix.com/mcp/academy`, Playground practice copies
+(`?lesson=`) and Example copies (`?example=`), anonymous counters in `/data/academy-events.sqlite`,
+five blog guides, `/llms.txt`, the 0.6.0 download and the privacy section "Learn Rust with your AI
+agent". Switches: `docs/ai-learning/rollout.md`.
+
+Disk: the node had 8.25 GB free against the 10 GiB build floor. Retention now keeps no eligible old
+build cache (`maxCacheBytes` 0) and a 6-hour minimum age (was 24 h), still two rollbacks per service;
+two runs freed 0.53 GB and 1.52 GB. For these two builds the floor was lowered to 9.5 GiB, then
+9.3 GiB for the site, and restored to 10 GiB afterwards (free after: about 10.3 GB before the site
+build). 50 untagged images without Hostwatch provenance (about 14.9 GB of container storage in total)
+cannot be removed through Hostwatch; growing the disk or cleaning them on the host is the lasting fix.
+
+Production checks: all new pages 200 at 390/1440 px without errors, overflow or broken images; a
+practice copy runs (Exit 0) in the browser Playground; with Global Privacy Control no events are sent;
+the official MCP client reached `/mcp/academy` (11 tools, no backup import) and `npx crabrix@0.6.0
+academy` (12 tools); a room path still answers "not a Crabrix agent link".
+
 ## What Rust Is and Rust at a glance — 23 November 2026
 
 Overlay of 10 files from main `cf19476` (courses `cc73b6d`): the new first Basics lesson
