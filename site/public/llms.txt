@@ -15,6 +15,7 @@ Crabrix Academy is the source of truth for lessons. AI agents may teach from it,
 ## For AI agents
 
 - [Crabrix Academy MCP](https://crabrix.com/mcp/academy): remote, read-only Streamable HTTP MCP server with crabrix_academy_* tools; no sign-in. Local alternative: `npx -y crabrix@0.6.0 academy`
+- Learning links: in the Crabrix app (1.2 or later), Learn with AI → Connect my progress creates a personal connector URL, `https://crabrix.com/mcp/learn/<linkId>/<secret>`. It has every Academy tool plus `crabrix_my_progress`, `crabrix_my_lesson`, `crabrix_my_next`, `crabrix_assign_lessons` and `crabrix_set_focus`: the agent reads the learner's real progress (encrypted end to end, read-only) and can send lessons to the app; it can never complete one
 - [Academy API index](https://crabrix.com/api/academy/v1/index.json): courses, lessons, learning paths and examples as JSON
 - [Teaching contract](https://crabrix.com/api/academy/v1/teaching-contract.md): how agents should teach with Crabrix (hints before solutions, honest review status)
 - [AI Learning State schema](https://crabrix.com/api/academy/v1/learning-state.schema.json): the learner-owned file for continuing a session

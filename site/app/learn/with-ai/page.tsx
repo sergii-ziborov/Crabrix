@@ -130,7 +130,7 @@ export default function LearnWithAIPage() {
         <p>Your progress stays where you earned it. Nothing is shared between the Crabrix app, this website and your agent unless you choose to, so you decide what your agent may know:</p>
         <ul className="learning-state-steps">
           <li><strong>Connect your progress</strong> in the Crabrix app, so your agent always sees your latest progress: <a href="#connect-progress">see below</a>.</li>
-          <li><strong>From the Crabrix app</strong> (iPhone and iPad, in the next app version): <em>Learn → Learn with AI → Continue learning</em>. Switch on <em>Include my completed lessons</em>, then copy or share your learning state and paste it into your agent with the <em>Continue learning</em> prompt. It works from a phone alone.</li>
+          <li><strong>From the Crabrix app</strong> (iPhone and iPad, Crabrix 1.2 or later): <em>Learn → Learn with AI → Continue learning</em>. Switch on <em>Include my completed lessons</em>, then copy or share your learning state and paste it into your agent with the <em>Continue learning</em> prompt. It works from a phone alone.</li>
           <li><strong>From a backup file</strong>, on a computer: with the local Academy server (<code>npx -y crabrix@{ACADEMY_SDK_VERSION} academy</code>), ask your agent to read your <code>.crabrixprogress</code> file. It is read on your computer and is not uploaded by Crabrix.</li>
           <li><strong>Without either</strong>: tell your agent which lesson you are on. It assumes nothing else.</li>
         </ul>
