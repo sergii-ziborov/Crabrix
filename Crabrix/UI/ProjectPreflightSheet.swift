@@ -65,7 +65,7 @@ struct ProjectPreflightSheet: View {
                         }
                         Text("Snapshot \(report.revision.sourceTreeHash.prefix(12)) · read-only inspection. Unknown results stay unverified. No code was compiled or executed by this report.")
                             .font(.caption.monospaced()).foregroundStyle(CrabrixTheme.muted)
-                    } else { ProgressView("Inspecting project…") }
+                    } else { CrabrixLoadingView("Inspecting project…", placement: .centered) }
                 }
                 .padding(20).frame(maxWidth: 760, alignment: .leading).frame(maxWidth: .infinity)
             }

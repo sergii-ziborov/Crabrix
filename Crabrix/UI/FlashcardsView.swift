@@ -33,7 +33,7 @@ struct FlashcardsView: View {
             ScrollView {
                 VStack(spacing: 18) {
                     if isLoading {
-                        ProgressView("Preparing your cards…").padding(.top, 60)
+                        CrabrixLoadingView("Preparing your cards…", placement: .centered).padding(.top, 40)
                     } else if !hasStarted || current == nil {
                         overview
                     } else if let card = current {

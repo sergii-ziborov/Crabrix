@@ -50,7 +50,7 @@ struct QuickPracticeView: View {
                                            description: Text(error))
                         .background(CrabrixTheme.background)
                 } else {
-                    ProgressView("Preparing installed courses…")
+                    CrabrixLoadingView("Preparing installed courses…", placement: .centered)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(CrabrixTheme.background)
                 }

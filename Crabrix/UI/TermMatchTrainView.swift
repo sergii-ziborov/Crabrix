@@ -82,7 +82,7 @@ struct TermMatchTrainView: View {
                         ContentUnavailableView("Courses unavailable", systemImage: "books.vertical",
                                                description: Text(error))
                     } else {
-                        ProgressView("Preparing installed course terms…")
+                        CrabrixLoadingView("Preparing installed course terms…", placement: .centered)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
                 } else {
