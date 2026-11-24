@@ -7,3 +7,5 @@ Then ask your agent "What have I done in Crabrix and what should I learn next?" 
 Your progress is encrypted on the phone; crabrix.com stores only ciphertext. Disconnect deletes the link and everything on crabrix.com at once (if you are offline, Crabrix finishes the deletion the next time it is online).
 
 Please check: connecting and disconnecting; that the agent sees the lessons you actually finished; that assigned lessons open the right lesson; that progress, answers, XP and projects are unchanged; and that the app works as before offline and without AI.
+
+Also in this build: loading indicators show the spinner beside their text and sit where they belong (Preparing Academy, flashcards, practice and others). In Learn, the ⋯ buttons on course cards are gone: swipe a course or Code Examples card from right to left to reveal Remove (and Update when newer examples exist); tap the card to close it again. Please check that a swipe never opens the course by mistake.
