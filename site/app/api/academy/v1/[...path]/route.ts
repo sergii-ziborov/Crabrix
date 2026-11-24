@@ -1,6 +1,6 @@
 import { academyExample, academyIndex, academyLesson, academyPath, ACADEMY_SCHEMA_VERSION, etagFor, learningStateSchema, teachingContract } from "@/lib/academy";
 import { ACADEMY_MCP_URL } from "@/lib/ai-learning";
-import { academyApiEnabled, academyMcpState, aiLearningEnabled } from "@/lib/flags";
+import { academyApiEnabled, academyMcpState, aiLearningEnabled, learningLinksEnabled } from "@/lib/flags";
 
 // Public, read-only Academy API v1 for AI agents and the Crabrix MCP. No cookies or
 // accounts are read; every response is the same for every caller.
@@ -30,7 +30,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ path
   if (path.length === 1 && path[0] === "status.json") {
     return respond(request, JSON.stringify({ schemaVersion: ACADEMY_SCHEMA_VERSION,
       learnWithAI: aiLearningEnabled() ? "on" : "paused", academyApi: academyApiEnabled() ? "on" : "paused",
-      academyMcp: { url: ACADEMY_MCP_URL, state: academyMcpState() }, message: null }), "application/json; charset=utf-8", 60);
+      academyMcp: { url: ACADEMY_MCP_URL, state: academyMcpState() },
+      learningLinks: learningLinksEnabled() ? "on" : "paused", message: null }), "application/json; charset=utf-8", 60);
   }
   if (!academyApiEnabled()) return failure(503, "UNAVAILABLE", "The Crabrix Academy API is paused. Lessons stay readable at https://crabrix.com/learn/.");
   if (path.length === 1 && path[0] === "index.json") return json(academyIndex(), "index");

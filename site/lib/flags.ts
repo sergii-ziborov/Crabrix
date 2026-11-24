@@ -13,3 +13,5 @@ export const academyApiEnabled = () => !off("CRABRIX_ACADEMY_API");
 export const academyEventsEnabled = () => !off("CRABRIX_ACADEMY_EVENTS");
 /** What status.json reports for https://crabrix.com/mcp/academy (served by the SDK container). */
 export const academyMcpState = (): "on" | "paused" => off("CRABRIX_ACADEMY_MCP_STATE") ? "paused" : "on";
+/** /api/learn-links/v1/* (docs/ai-learning/learning-link.md): when off, every route answers 503 and status.json says "paused". */
+export const learningLinksEnabled = () => !off("CRABRIX_LEARN_LINKS");

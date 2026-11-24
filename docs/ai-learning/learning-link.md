@@ -131,3 +131,33 @@ written to disk or logged.
 - Remote pause: `status.json` `learningLinks: "paused"` hides Connect and pauses sync.
 - Privacy: new section in the privacy policy; the App Store label is the owner's decision (encrypted
   learning progress leaves the device only after the learner connects).
+
+## Website implementation notes (site, 24 November 2026)
+
+- **Trailing slash.** The site runs with `trailingSlash: true`, so the canonical paths end in `/`:
+  `/api/learn-links/v1/`, `…/v1/<linkId>/`, `…/<linkId>/snapshot/`, `…/<linkId>/inbox/`,
+  `…/<linkId>/inbox/<id>/`, `…/<linkId>/status/`. Without the slash Next.js answers `308` to the
+  slash form (method and body are kept; `curl -L` works), but call the slash form: it saves a round
+  trip and some clients drop `Authorization` on a redirect. Next.js cannot exempt one route from
+  this redirect without turning it off for the whole site.
+- **Bodies.** `Content-Type: application/json`, uncompressed. `PUT …/snapshot/` and `POST …/inbox/`
+  take the envelope object itself; any other key is a 400. Create answers `201 {linkId, createdAt}`.
+- **Sizes** are the request body in UTF-8 bytes: snapshot 262,144, inbox 8,192, create 1,024. The
+  envelope adds 42 bytes and base64url a third, so a snapshot plaintext can be at most 196,560 bytes
+  and a tutor message 6,096 bytes. The character limits of a tutor message can exceed that with
+  non-ASCII text, so the MCP server checks the encoded size before posting.
+- **Times** are ISO 8601 UTC without fractions (`2026-11-24T10:00:00Z`). In status, `updatedAt` is
+  the snapshot's; it and `lastAgentReadAt` are `null` until the first upload or agent read.
+- **Inbox ids** are 22 base64url characters. Deleting an id that is already gone answers 204.
+- **Errors** are `{"error":{"code":…}}`: 400 `BAD_REQUEST` or `TOO_LARGE`, 404 `NOT_FOUND` (also for
+  a missing or malformed `Authorization`), 405 `METHOD_NOT_ALLOWED` with `Allow`, 409 `CONFLICT`,
+  429 `RATE_LIMITED` with `Retry-After` in seconds, 503 `UNAVAILABLE`, 500 `INTERNAL`.
+- **Limits** are fixed windows counted after validation: 20 creations per UTC day per
+  sha256(in-memory daily salt ‖ `X-Real-IP`, IPv6 per /64), 120 snapshot PUTs and 60 inbox POSTs per
+  link per hour, and at most 500 creations per UTC day from all clients together (this bounds the
+  disk a flood of addresses could fill). A restart starts a new salt, so per-address creation
+  counters restart too.
+- **Expiry** counts creation, snapshot PUTs and agent snapshot GETs only; status checks, inbox reads,
+  acknowledgements and inbox posts do not keep a link alive.
+- `status.json` `learningLinks` reflects only `CRABRIX_LEARN_LINKS`; the MCP switch stays in
+  `academyMcp.state`.
