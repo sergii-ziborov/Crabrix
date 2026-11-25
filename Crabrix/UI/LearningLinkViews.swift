@@ -99,6 +99,10 @@ struct LearningLinkSection: View {
                     Label("Connected", systemImage: "checkmark.circle.fill")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(CrabrixTheme.mint)
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(CrabrixTheme.mint.opacity(0.14), in: Capsule())
+                        .fixedSize()
                         .accessibilityIdentifier("link-connected-badge")
                 }
             }
@@ -139,18 +143,28 @@ struct LearningLinkSection: View {
     // MARK: Not connected
 
     private var disconnectedPanel: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Give your agent a personal connector that can read your Crabrix progress and send you lessons to practise. Nothing is shared until you connect, and Disconnect deletes it.")
+        VStack(alignment: .leading, spacing: 16) {
+            Text("A personal connector for your agent: it reads your Crabrix progress and sends you lessons to practise.")
                 .font(.subheadline)
                 .fixedSize(horizontal: false, vertical: true)
-            LearningLinkSharedList()
+            VStack(alignment: .leading, spacing: 14) {
+                LearningLinkFeature(systemImage: "chart.bar.xaxis", tint: CrabrixTheme.blue,
+                                    title: "Reads your progress",
+                                    detail: "Completed lessons, where you are now and your weakest practice topics.")
+                LearningLinkFeature(systemImage: "tray.and.arrow.down.fill", tint: CrabrixTheme.coral,
+                                    title: "Sends you lessons",
+                                    detail: "They appear at the top of Learn. Only Crabrix checks complete a lesson.")
+                LearningLinkFeature(systemImage: "lock.fill", tint: CrabrixTheme.mint,
+                                    title: "Encrypted, and yours to delete",
+                                    detail: "Nothing is shared until you connect. Disconnect deletes it.")
+            }
             Button {
                 link.notice = nil
                 confirmsConnect = true
             } label: {
                 Label("Connect", systemImage: "link.badge.plus")
                     .font(.subheadline.weight(.semibold))
-                    .frame(minHeight: 30)
+                    .frame(maxWidth: .infinity, minHeight: 34)
             }
             .buttonStyle(.borderedProminent)
             .foregroundStyle(CrabrixTheme.onAccent)
@@ -160,6 +174,17 @@ struct LearningLinkSection: View {
             if let line = link.statusLine {
                 statusText(line)
             }
+            Divider().overlay(CrabrixTheme.border)
+            DisclosureGroup {
+                LearningLinkSharedList()
+                    .padding(.top, 10)
+            } label: {
+                Text("What is shared, and what never is")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(CrabrixTheme.primary)
+            }
+            .tint(CrabrixTheme.blue)
+            .accessibilityIdentifier("link-what-is-shared")
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -181,9 +206,11 @@ struct LearningLinkSection: View {
     // MARK: Connected
 
     private var connectedPanel: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 16) {
+            statusRows
+
             if let url = link.url?.absoluteString {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
                     Text("Your personal URL")
                         .font(.headline)
                         .accessibilityAddTraits(.isHeader)
@@ -191,7 +218,7 @@ struct LearningLinkSection: View {
                         .accessibilityLabel("Your personal Crabrix URL")
                         .accessibilityValue(url)
                         .accessibilityIdentifier("link-url")
-                    AIFlowLayout(spacing: 10) {
+                    HStack(spacing: 10) {
                         AICopyButton(title: "Copy URL", accessibilityLabel: "Copy my personal Crabrix URL",
                                      identifier: "link-copy-url", prominent: true, text: { url })
                         ShareLink(item: url) {
@@ -203,16 +230,19 @@ struct LearningLinkSection: View {
                         .accessibilityLabel("Share my personal Crabrix URL")
                         .accessibilityIdentifier("link-share-url")
                     }
-                    Label("Anyone with this URL can read your progress. Give it only to your agent.",
-                          systemImage: "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(CrabrixTheme.amber)
-                        .fixedSize(horizontal: false, vertical: true)
+                    Label {
+                        Text("Anyone with this URL can read your progress. Give it only to your agent.")
+                            .fixedSize(horizontal: false, vertical: true)
+                    } icon: {
+                        Image(systemName: "lock.fill")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.amber)
                 }
 
                 Divider().overlay(CrabrixTheme.border)
 
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Add it to your agent")
                         .font(.headline)
                         .accessibilityAddTraits(.isHeader)
@@ -230,8 +260,6 @@ struct LearningLinkSection: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            statusRows
-
             if let line = link.statusLine {
                 statusText(line)
             }
@@ -243,35 +271,19 @@ struct LearningLinkSection: View {
                     .accessibilityIdentifier("link-sync-paused")
             }
 
-            AIFlowLayout(spacing: 10) {
-                Button {
-                    Task { await link.syncNow() }
-                } label: {
-                    Label(link.activity == .syncing ? "Syncing…" : "Sync now", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .buttonStyle(.bordered)
-                .tint(CrabrixTheme.blue)
-                .disabled(link.activity != nil || paused)
-                .accessibilityIdentifier("link-sync-now")
-                Button(role: .destructive) {
-                    confirmsDisconnect = true
-                } label: {
-                    Label(link.activity == .disconnecting ? "Disconnecting…" : "Disconnect", systemImage: "link.badge.minus")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .buttonStyle(.bordered)
-                .tint(CrabrixTheme.danger)
-                .disabled(link.activity == .disconnecting)
-                .accessibilityHint("Deletes the link and your encrypted progress on crabrix.com.")
-                .accessibilityIdentifier("link-disconnect")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) { linkActions }
+                VStack(alignment: .leading, spacing: 10) { linkActions }
             }
 
-            DisclosureGroup("What your agent can read") {
+            DisclosureGroup {
                 LearningLinkSharedList()
-                    .padding(.top, 8)
+                    .padding(.top, 10)
+            } label: {
+                Text("What your agent can read")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(CrabrixTheme.primary)
             }
-            .font(.subheadline.weight(.semibold))
             .tint(CrabrixTheme.blue)
             .accessibilityIdentifier("link-what-is-shared")
         }
@@ -280,25 +292,62 @@ struct LearningLinkSection: View {
         .crabrixPanel(cornerRadius: 16)
     }
 
+    @ViewBuilder
+    private var linkActions: some View {
+        Button {
+            Task { await link.syncNow() }
+        } label: {
+            Label(link.activity == .syncing ? "Syncing…" : "Sync now", systemImage: "arrow.triangle.2.circlepath")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.bordered)
+        .tint(CrabrixTheme.blue)
+        .disabled(link.activity != nil || paused)
+        .accessibilityIdentifier("link-sync-now")
+        Button(role: .destructive) {
+            confirmsDisconnect = true
+        } label: {
+            Label(link.activity == .disconnecting ? "Disconnecting…" : "Disconnect", systemImage: "link.badge.minus")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, minHeight: 30)
+        }
+        .buttonStyle(.bordered)
+        .tint(CrabrixTheme.danger)
+        .disabled(link.activity == .disconnecting)
+        .accessibilityHint("Deletes the link and your encrypted progress on crabrix.com.")
+        .accessibilityIdentifier("link-disconnect")
+    }
+
+    /// Two small tiles side by side, stacked at accessibility text sizes.
     private var statusRows: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            statusRow("Last synced", value: link.state?.lastSyncedAt, never: "Not yet", identifier: "link-last-synced")
-            statusRow("Last used by your agent", value: link.state?.lastAgentReadAt, never: "Not yet",
-                      identifier: "link-last-used")
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) { statusTiles }
+            VStack(spacing: 10) { statusTiles }
         }
     }
 
-    private func statusRow(_ title: String, value: Date?, never: String, identifier: String) -> some View {
-        let text = value.map { Self.relative($0) } ?? never
-        return HStack(alignment: .firstTextBaseline) {
-            Text(title)
-                .font(.subheadline)
+    @ViewBuilder
+    private var statusTiles: some View {
+        statusTile("Last synced", value: link.state?.lastSyncedAt, systemImage: "arrow.triangle.2.circlepath",
+                   identifier: "link-last-synced")
+        statusTile("Last used by your agent", value: link.state?.lastAgentReadAt, systemImage: "sparkles",
+                   identifier: "link-last-used")
+    }
+
+    private func statusTile(_ title: String, value: Date?, systemImage: String, identifier: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label(title, systemImage: systemImage)
+                .font(.caption)
                 .foregroundStyle(CrabrixTheme.muted)
-            Spacer(minLength: 8)
-            Text(text)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(value.map { Self.relative($0) } ?? "Not yet")
                 .font(.subheadline.weight(.semibold))
-                .multilineTextAlignment(.trailing)
         }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 64, alignment: .topLeading)
+        .background(CrabrixTheme.raised.opacity(0.6), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(identifier)
     }
@@ -316,6 +365,34 @@ struct LearningLinkSection: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
         return formatter.localizedString(for: date, relativeTo: now)
+    }
+}
+
+/// One point of what Connect my progress does, with its icon.
+private struct LearningLinkFeature: View {
+    let systemImage: String
+    let tint: Color
+    let title: String
+    let detail: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(tint)
+                .frame(width: 34, height: 34)
+                .background(tint.opacity(0.14), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline.weight(.semibold))
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(CrabrixTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -367,36 +444,15 @@ private struct LearningLinkClientSteps: View {
     let url: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             if let note = client.computerNote {
-                Label(note, systemImage: "laptopcomputer")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(CrabrixTheme.blue)
-                    .fixedSize(horizontal: false, vertical: true)
+                AIComputerNote(text: note)
             }
-            ForEach(Array(LearningLinkGuide.steps(for: client, url: url).enumerated()), id: \.offset) { index, block in
-                switch block {
-                case let .text(markdown):
-                    Text(Self.inline(markdown))
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                case let .code(code, copyTitle, label):
-                    VStack(alignment: .leading, spacing: 8) {
-                        AICodeBlock(text: code)
-                        AICopyButton(title: copyTitle, accessibilityLabel: label,
-                                     identifier: "link-copy-\(client.id)-\(index)", text: { code })
-                    }
-                }
-            }
+            AIStepList(blocks: LearningLinkGuide.steps(for: client, url: url),
+                       copyIdentifier: { "link-copy-\(client.id)-\($0)" })
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("link-steps-\(client.id)")
-    }
-
-    /// Our own fixed text only; nothing from an agent goes through Markdown.
-    private static func inline(_ markdown: String) -> AttributedString {
-        (try? AttributedString(markdown: markdown, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-            ?? AttributedString(markdown)
     }
 }
 
@@ -443,7 +499,7 @@ struct LearningLinkConfirmSheet: View {
                             .foregroundStyle(CrabrixTheme.amber)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    AIFlowLayout(spacing: 10) {
+                    VStack(spacing: 10) {
                         Button {
                             Task {
                                 if await link.connect() { dismiss() }
@@ -454,16 +510,23 @@ struct LearningLinkConfirmSheet: View {
                                 Text(link.activity == .connecting ? "Connecting…" : "Connect and upload")
                                     .font(.subheadline.weight(.semibold))
                             }
-                            .frame(minHeight: 30)
+                            .frame(maxWidth: .infinity, minHeight: 34)
                         }
                         .buttonStyle(.borderedProminent)
                         .foregroundStyle(CrabrixTheme.onAccent)
                         .tint(CrabrixTheme.coral)
                         .disabled(link.activity != nil || input == nil)
                         .accessibilityIdentifier("link-confirm-connect")
-                        Button("Cancel") { dismiss() }
-                            .buttonStyle(.bordered)
-                            .accessibilityIdentifier("link-confirm-cancel")
+                        Button {
+                            dismiss()
+                        } label: {
+                            Text("Cancel")
+                                .font(.subheadline.weight(.semibold))
+                                .frame(maxWidth: .infinity, minHeight: 34)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(CrabrixTheme.muted)
+                        .accessibilityIdentifier("link-confirm-cancel")
                     }
                 }
                 .padding(.vertical, 20)

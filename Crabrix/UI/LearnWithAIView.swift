@@ -34,30 +34,40 @@ struct LearnWithAIView: View {
     @State private var wasInBackground = false
 
     private let promptColumns = [GridItem(.adaptive(minimum: 300), spacing: 14, alignment: .top)]
+    private static let linkSectionID = "connect-my-progress"
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 26) {
-                intro
-                if showsFeedback {
-                    AIFeedbackCard(flags: flags) { showsFeedback = false }
+        ScrollViewReader { scroller in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 26) {
+                    intro
+                    if showsFeedback {
+                        AIFeedbackCard(flags: flags) { showsFeedback = false }
+                    }
+                    LearningLinkSection(link: learningLink, availability: learningLinks,
+                                        learnWithAIPaused: status.isPaused)
+                        .id(Self.linkSectionID)
+                    if case let .paused(message) = status {
+                        pausedNotice(message)
+                    } else if learningLink.isConnected {
+                        // The personal URL above replaces the public one.
+                        connectedInsteadNote
+                    } else {
+                        connectSection
+                    }
+                    promptsSection
+                    continueSection
+                    limitsSection
                 }
-                LearningLinkSection(link: learningLink, availability: learningLinks,
-                                    learnWithAIPaused: status.isPaused)
-                if case let .paused(message) = status {
-                    pausedNotice(message)
-                } else if learningLink.isConnected {
-                    // The personal URL above replaces the public one.
-                    connectedInsteadNote
-                } else {
-                    connectSection
-                }
-                promptsSection
-                continueSection
-                limitsSection
+                .padding(.vertical, 20)
+                .crabrixPageContent()
             }
-            .padding(.vertical, 20)
-            .crabrixPageContent()
+            // Just connected: show the status and the personal URL from the top
+            // of the section, not the middle of the panel the sheet left behind.
+            .onChange(of: learningLink.isConnected) { _, connected in
+                guard connected else { return }
+                withAnimation(.easeInOut(duration: 0.35)) { scroller.scrollTo(Self.linkSectionID, anchor: .top) }
+            }
         }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
@@ -86,38 +96,67 @@ struct LearnWithAIView: View {
 
     // MARK: Sections
 
+    /// One full-width card: the words keep the whole width at every text size.
     private var intro: some View {
-        // At accessibility text sizes the icon sits above the text, so the
-        // words keep the full width.
-        let layout = dynamicTypeSize.isAccessibilitySize
-            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
-            : AnyLayout(HStackLayout(alignment: .top, spacing: 14))
-        return layout {
-            Image(systemName: "sparkles")
-                .font(.title2)
-                .foregroundStyle(CrabrixTheme.blue)
-                .frame(width: 48, height: 48)
-                .background(CrabrixTheme.blue.opacity(0.13), in: RoundedRectangle(cornerRadius: 14))
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 6) {
-                Text("OPTIONAL · FREE · NO ACCOUNT")
-                    .font(.caption2.monospaced().bold())
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .center, spacing: 12) {
+                Image(systemName: "sparkles")
+                    .font(.title3.weight(.semibold))
                     .foregroundStyle(CrabrixTheme.blue)
-                Text("Learn Rust with your AI agent.")
-                    .font(.title2.bold())
+                    .frame(width: 44, height: 44)
+                    .background(CrabrixTheme.blue.opacity(0.14), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    .accessibilityHidden(true)
+                AIFlowLayout(spacing: 6) {
+                    ForEach(["Optional", "Free", "No account"], id: \.self) { tag in
+                        Text(tag)
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(CrabrixTheme.blue)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(CrabrixTheme.blue.opacity(0.12), in: Capsule())
+                    }
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Optional, free, no account")
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Learn Rust with your AI agent")
+                    .font(.title.bold())
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityAddTraits(.isHeader)
                 Text("Connect Claude, Codex, Cursor or another MCP client to Crabrix Academy. Your agent teaches from the real lessons and exercises, and you write the code and run it in Crabrix.")
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+            Label {
                 Text("AI is optional. Every lesson, exercise and the Playground work exactly as before without it.")
-                    .font(.caption)
-                    .foregroundStyle(CrabrixTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)
+            } icon: {
+                Image(systemName: "checkmark.shield.fill")
+                    .foregroundStyle(CrabrixTheme.mint)
+            }
+            .font(.footnote)
+            .foregroundStyle(CrabrixTheme.muted)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background {
+            ZStack(alignment: .topTrailing) {
+                CrabrixTheme.panel
+                LinearGradient(colors: [CrabrixTheme.blue.opacity(0.14), CrabrixTheme.coral.opacity(0.05)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                Image(systemName: "sparkles")
+                    .font(.system(size: 96, weight: .semibold))
+                    .foregroundStyle(CrabrixTheme.blue.opacity(0.06))
+                    .offset(x: 30, y: -30)
+                    .accessibilityHidden(true)
             }
         }
+        .clipShape(CrabrixCardShape(cornerRadius: 20))
+        .overlay { CrabrixCardShape(cornerRadius: 20).stroke(CrabrixTheme.blue.opacity(0.22)) }
         .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("ai-intro")
     }
 
     private func pausedNotice(_ message: String?) -> some View {
@@ -485,42 +524,19 @@ private struct AIClientSteps: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(client.name)
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: 16) {
             if let note = client.computerNote {
-                Label(note, systemImage: "laptopcomputer")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(CrabrixTheme.blue)
-                    .fixedSize(horizontal: false, vertical: true)
+                AIComputerNote(text: note)
                     .accessibilityIdentifier("ai-computer-note")
             }
-            ForEach(Array(client.steps.enumerated()), id: \.offset) { index, block in
-                switch block {
-                case let .text(markdown):
-                    Text(Self.inline(markdown))
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                case let .code(code, copyTitle, label):
-                    VStack(alignment: .leading, spacing: 8) {
-                        AICodeBlock(text: code)
-                        AICopyButton(
-                            title: copyTitle,
-                            accessibilityLabel: label,
-                            identifier: "ai-copy-\(client.id)-\(index)",
-                            text: { code },
-                            onCopied: onCopied
-                        )
-                    }
-                }
-            }
+            AIStepList(blocks: client.steps, copyIdentifier: { "ai-copy-\(client.id)-\($0)" }, onCopied: onCopied)
             if let link = client.openLink {
                 Button {
                     openURL(link.url)
                 } label: {
                     Label(link.title, systemImage: "arrow.up.right.square")
                         .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 34)
                 }
                 .buttonStyle(.borderedProminent)
                 .foregroundStyle(CrabrixTheme.onAccent)
@@ -534,8 +550,113 @@ private struct AIClientSteps: View {
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("ai-steps-\(client.id)")
     }
+}
 
-    /// Bold, emphasis and `code` at the surrounding text size.
+/// "Set this up on a computer": a tinted note above the steps.
+struct AIComputerNote: View {
+    let text: String
+
+    var body: some View {
+        Label {
+            Text(text).fixedSize(horizontal: false, vertical: true)
+        } icon: {
+            Image(systemName: "laptopcomputer")
+        }
+        .font(.subheadline.weight(.semibold))
+        .foregroundStyle(CrabrixTheme.blue)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(CrabrixTheme.blue.opacity(0.09), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+}
+
+/// Setup steps as a numbered list: each sentence starts a step, and the
+/// command, URL or configuration after it sits inside that step with its own
+/// copy button. `copyIdentifier` gets the block's index in `blocks`.
+struct AIStepList: View {
+    let blocks: [AcademyAIClient.Block]
+    let copyIdentifier: (Int) -> String
+    var onCopied: () -> Void = {}
+
+    private struct Code {
+        let index: Int
+        let text: String
+        let copyTitle: String
+        let accessibilityLabel: String
+    }
+
+    private struct Step: Identifiable {
+        let id: Int
+        var text: String?
+        var codes: [Code] = []
+    }
+
+    private var steps: [Step] {
+        var steps: [Step] = []
+        for (index, block) in blocks.enumerated() {
+            switch block {
+            case let .text(markdown):
+                steps.append(Step(id: index, text: markdown))
+            case let .code(code, copyTitle, label):
+                let item = Code(index: index, text: code, copyTitle: copyTitle, accessibilityLabel: label)
+                if steps.isEmpty { steps.append(Step(id: index)) }
+                steps[steps.count - 1].codes.append(item)
+            }
+        }
+        return steps
+    }
+
+    var body: some View {
+        let steps = steps
+        VStack(alignment: .leading, spacing: 18) {
+            ForEach(Array(steps.enumerated()), id: \.element.id) { number, step in
+                HStack(alignment: .top, spacing: 12) {
+                    Text("\(number + 1)")
+                        .font(.footnote.weight(.bold).monospacedDigit())
+                        .foregroundStyle(CrabrixTheme.coral)
+                        .frame(width: 26, height: 26)
+                        .background(CrabrixTheme.coral.opacity(0.14), in: Circle())
+                        .accessibilityLabel("Step \(number + 1)")
+                    VStack(alignment: .leading, spacing: 10) {
+                        if let text = step.text {
+                            Text(Self.inline(text))
+                                .font(.subheadline)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.top, 3)
+                        }
+                        ForEach(step.codes, id: \.index) { code in
+                            VStack(alignment: .leading, spacing: 8) {
+                                AICodeBlock(text: code.text)
+                                AICopyButton(
+                                    title: code.copyTitle,
+                                    accessibilityLabel: code.accessibilityLabel,
+                                    identifier: copyIdentifier(code.index),
+                                    text: { code.text },
+                                    onCopied: onCopied
+                                )
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .background(alignment: .topLeading) {
+                    if number < steps.count - 1 {
+                        // The thread from one step's number to the next.
+                        Rectangle()
+                            .fill(CrabrixTheme.coral.opacity(0.18))
+                            .frame(width: 2)
+                            .padding(.top, 32)
+                            .padding(.bottom, -14)
+                            .offset(x: 12)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .accessibilityElement(children: .contain)
+            }
+        }
+    }
+
+    /// Our own fixed text only: bold, emphasis and `code` at the surrounding size.
     private static func inline(_ markdown: String) -> AttributedString {
         (try? AttributedString(markdown: markdown, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
             ?? AttributedString(markdown)
@@ -696,29 +817,40 @@ private struct AIFeedbackCard: View {
     @State private var mailUnavailable = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .top) {
-                Text(AILearningFeedback.question)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "bubble.left.and.text.bubble.right.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(CrabrixTheme.blue)
+                    .frame(width: 36, height: 36)
+                    .background(CrabrixTheme.blue.opacity(0.14), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+                    .accessibilityHidden(true)
+                Text(answer == nil ? AILearningFeedback.question : "Thank you")
                     .font(.headline)
                     .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
                     .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 8)
+                Spacer(minLength: 4)
                 Button {
                     if answer == nil { flags.finishFeedback(.dismissed) }
                     onClose()
                 } label: {
                     Image(systemName: "xmark")
                         .font(.caption.bold())
+                        .frame(width: 28, height: 28)
+                        .background(CrabrixTheme.raised, in: Circle())
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(CrabrixTheme.muted)
-                .accessibilityLabel(answer == nil ? "Dismiss this question" : "Close")
+                .padding(.top, -4)
+                .padding(.trailing, -8)
+                .accessibilityLabel(answer == nil ? "Not now, dismiss this question" : "Close")
             }
 
             if let answer {
-                Text("Thank you. Anything to add? Optional; it goes only into an email draft you send yourself.")
+                Text("Anything to add? Optional; it goes only into an email draft you send yourself.")
                     .font(.subheadline)
                     .foregroundStyle(CrabrixTheme.muted)
                     .fixedSize(horizontal: false, vertical: true)
@@ -736,13 +868,19 @@ private struct AIFeedbackCard: View {
                     } label: {
                         Label("Email it", systemImage: "envelope.fill")
                             .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 30)
                     }
                     .buttonStyle(.borderedProminent)
                     .foregroundStyle(CrabrixTheme.onAccent)
                     .tint(CrabrixTheme.coral)
                     .accessibilityHint("Opens a mail draft with your answer. Nothing is sent until you send it.")
-                    Button("Done", action: onClose)
-                        .buttonStyle(.bordered)
+                    Button(action: onClose) {
+                        Text("Done")
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 30)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(CrabrixTheme.blue)
                 }
                 if mailUnavailable {
                     Text("No mail app answered. Your message is on the clipboard instead.")
@@ -751,23 +889,10 @@ private struct AIFeedbackCard: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
             } else {
-                AIFlowLayout(spacing: 8) {
-                    ForEach(AILearningFeedback.Answer.allCases) { item in
-                        Button(item.rawValue) {
-                            answer = item
-                            flags.finishFeedback(.answered)
-                        }
-                        .buttonStyle(.bordered)
-                        .tint(CrabrixTheme.blue)
-                        .accessibilityIdentifier("ai-feedback-\(item == .yes ? "yes" : item == .partly ? "partly" : "not-working")")
-                    }
-                    Button("Not now") {
-                        flags.finishFeedback(.dismissed)
-                        onClose()
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(CrabrixTheme.muted)
-                    .accessibilityLabel("Not now, dismiss this question")
+                // Three equal answers in a row; stacked when the text is too large.
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 8) { answerButtons }
+                    VStack(spacing: 8) { answerButtons }
                 }
                 Text("Nothing is sent: an answer goes only into an email draft, if you choose to write one.")
                     .font(.caption)
@@ -777,11 +902,41 @@ private struct AIFeedbackCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CrabrixTheme.blue.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .overlay { RoundedRectangle(cornerRadius: 16).stroke(CrabrixTheme.blue.opacity(0.3)) }
+        .background(CrabrixTheme.blue.opacity(0.07))
+        .background(CrabrixTheme.panel)
+        .clipShape(CrabrixCardShape(cornerRadius: 18))
+        .overlay { CrabrixCardShape(cornerRadius: 18).stroke(CrabrixTheme.blue.opacity(0.25)) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("ai-feedback-card")
+    }
+
+    private var answerButtons: some View {
+        ForEach(AILearningFeedback.Answer.allCases) { item in
+            Button {
+                answer = item
+                flags.finishFeedback(.answered)
+            } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: item.systemImage)
+                        .font(.title3)
+                        .foregroundStyle(item.tint)
+                        .frame(height: 26)
+                    Text(item.shortTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(CrabrixTheme.primary)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+                .padding(.horizontal, 10)
+                .frame(maxWidth: .infinity, minHeight: 70)
+                .background(CrabrixTheme.panel, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .overlay { RoundedRectangle(cornerRadius: 14, style: .continuous).stroke(CrabrixTheme.border) }
+                .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(item.rawValue)
+            .accessibilityIdentifier("ai-feedback-\(item == .yes ? "yes" : item == .partly ? "partly" : "not-working")")
+        }
     }
 
     private func email(_ answer: AILearningFeedback.Answer) {
@@ -835,5 +990,32 @@ struct AIFlowLayout: Layout {
         let ideal = subview.sizeThatFits(.unspecified)
         guard ideal.width > maxWidth else { return ideal }
         return subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil))
+    }
+}
+
+private extension AILearningFeedback.Answer {
+    /// The words on the button; the email keeps `rawValue`.
+    var shortTitle: String {
+        switch self {
+        case .yes: "Yes"
+        case .partly: "Partly"
+        case .notWorking: "Didn’t work"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .yes: "hand.thumbsup.fill"
+        case .partly: "circle.lefthalf.filled"
+        case .notWorking: "wrench.and.screwdriver.fill"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .yes: CrabrixTheme.mint
+        case .partly: CrabrixTheme.amber
+        case .notWorking: CrabrixTheme.coral
+        }
     }
 }

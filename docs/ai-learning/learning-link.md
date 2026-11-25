@@ -115,7 +115,9 @@ written to disk or logged.
 ## App (Crabrix 1.2.0)
 
 - **Learn with AI → Connect my progress**: explains exactly what is shared (the snapshot fields
-  above) and what is not. "Connect" creates the link: random id and secret (SecRandomCopyBytes),
+  above) and what is not: three short points and Connect, with the full list folded under
+  "What is shared, and what never is" and shown in full again in the confirmation before the
+  first upload. "Connect" creates the link: random id and secret (SecRandomCopyBytes),
   `POST` create, first snapshot `PUT`. Then it shows the personal URL with Copy and Share, steps for
   each client ("use this URL instead of the public one"), "Last used by your agent", and
   **Disconnect** (`DELETE`, then wipe local secrets). The secret lives in the Keychain
