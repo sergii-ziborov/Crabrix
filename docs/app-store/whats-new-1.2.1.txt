@@ -1,0 +1,3 @@
+Smoother Learn: the course list scrolls without stutter again, even when your finger starts on a course card. Swiping a card sideways still shows its actions, and scrolling closes an open card.
+
+Learn with AI has a cleaner layout: a single intro card, a quicker three-button feedback question, numbered setup steps for each client, and Connect my progress now shows three short points with the full list of what is and is never shared one tap away. After you connect, the screen shows your status and personal URL first.

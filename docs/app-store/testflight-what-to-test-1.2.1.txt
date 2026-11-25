@@ -1,0 +1,7 @@
+Crabrix 1.2.1 fixes scrolling in Learn and tidies Learn with AI. Everything from 1.2.0 is unchanged.
+
+Please check:
+- Learn: scroll the course list starting with your finger on a course card. It should scroll smoothly at once. A sideways swipe from right to left still shows Remove; tap the card to close it; scrolling also closes it. A plain tap opens the course.
+- Learn with AI (Learn → Learn with your AI agent): the intro card, the feedback question with Yes / Partly / Didn't work (only after you copied a step earlier), and Connect my progress with three short points and a full-width Connect. "What is shared, and what never is" unfolds the full list; the confirmation before connecting still shows it in full.
+- After Connect, the screen should scroll to your status (Last synced, Last used by your agent) and personal URL. Setup steps for Claude, Claude Code, Codex and Cursor are numbered.
+- Dark mode and large text sizes.
