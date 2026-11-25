@@ -20,6 +20,17 @@ final class LearnLibrarySwipeUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Code Examples options"].exists, "the ⋯ menu is gone")
         capture("02-library")
 
+        // A vertical swipe that starts on a card scrolls the library: the
+        // card swipe only takes horizontal movement.
+        let top = course.frame.minY
+        course.swipeUp()
+        Thread.sleep(forTimeInterval: 1.2)
+        XCTAssertLessThan(course.frame.minY, top - 150, "the library scrolls from a card")
+        app.swipeDown(velocity: .fast)
+        app.swipeDown(velocity: .fast)
+        Thread.sleep(forTimeInterval: 1.2)
+        XCTAssertEqual(course.frame.minY, top, accuracy: 4, "back at the top")
+
         course.swipeLeft()
         Thread.sleep(forTimeInterval: 0.8)
         capture("03-swiped")

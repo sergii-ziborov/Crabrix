@@ -43,7 +43,12 @@ final class LearningLinkUITests: XCTestCase {
         let connect = app.buttons["link-connect"]
         XCTAssertTrue(connect.waitForExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Connect my progress"].exists)
-        XCTAssertTrue(app.otherElements["link-shared-list"].exists)
+        // The full list is folded under the Connect button (and shown again
+        // in the confirmation before anything is uploaded).
+        let whatIsShared = app.buttons["What is shared, and what never is"]
+        scrollTo(whatIsShared)
+        whatIsShared.tap()
+        XCTAssertTrue(element("Shared with your agent").waitForExistence(timeout: 3))
         XCTAssertTrue(element("Your answers, code and projects").exists)
         XCTAssertTrue(element("XP, rating and achievements").exists)
         XCTAssertTrue(app.staticTexts["Connect your agent"].exists, "the public setup stays below")
@@ -77,7 +82,9 @@ final class LearningLinkUITests: XCTestCase {
         XCTAssertTrue(app.buttons["link-share-url"].exists)
         XCTAssertTrue(app.descendants(matching: .any)["link-last-used"].waitForExistence(timeout: 5))
         capture("05-connected")
-        app.buttons["link-copy-url"].tap()
+        let copyURL = app.buttons["link-copy-url"]
+        for _ in 0..<6 where !copyURL.isHittable { app.swipeDown() }
+        copyURL.tap()
         XCTAssertTrue(app.buttons["Copied"].waitForExistence(timeout: 2))
 
         // Connected, the personal URL replaces the public setup and its picker.

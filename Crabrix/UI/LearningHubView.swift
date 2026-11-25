@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum LearningRoute: Hashable {
     case courses
@@ -443,6 +444,12 @@ private struct CourseLibraryView: View {
             .crabrixPageContent()
         }
         .refreshable { await academy.checkForUpdates() }
+        // Like list rows: scrolling the library closes an open card.
+        .onScrollPhaseChange { _, phase in
+            if phase == .interacting, openSwipeCard != nil {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) { openSwipeCard = nil }
+            }
+        }
         .background(CrabrixTheme.background.ignoresSafeArea())
         .foregroundStyle(CrabrixTheme.primary)
         .navigationTitle(showsPractice ? "Learn" : "Courses")
@@ -1098,7 +1105,8 @@ private struct SwipeRevealCard<Content: View>: View {
     let actions: [SwipeCardAction]
     let content: Content
 
-    @GestureState private var drag: SwipeDrag = .idle
+    /// The finger's horizontal travel while a swipe is in progress.
+    @State private var dragX: CGFloat?
     @State private var hintOffset: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("crabrix.learn.swipeHintShown.v1") private var hintShown = false
@@ -1114,17 +1122,12 @@ private struct SwipeRevealCard<Content: View>: View {
         self.content = content()
     }
 
-    private enum SwipeDrag: Equatable {
-        case idle, vertical
-        case horizontal(CGFloat)
-    }
-
     private var revealWidth: CGFloat { actionWidth * CGFloat(actions.count) }
     private var isOpen: Bool { openID == id }
 
     private var offset: CGFloat {
         var x = isOpen ? -revealWidth : 0
-        if case let .horizontal(dx) = drag { x += dx }
+        x += dragX ?? 0
         x += hintOffset
         // A little give past either end, then it stops.
         if x > 0 { return min(x * 0.25, 12) }
@@ -1144,10 +1147,9 @@ private struct SwipeRevealCard<Content: View>: View {
                 }
             }
             .offset(x: offset)
-            .simultaneousGesture(swipe)
+            .gesture(HorizontalSwipeGesture(changed: { dragX = $0 }, ended: settle))
             .background(alignment: .trailing) { actionButtons }
             .clipShape(CrabrixCardShape(cornerRadius: 16))
-            .animation(.interactiveSpring(response: 0.28, dampingFraction: 0.86), value: drag)
             .task(id: showsHint) { await peekOnce() }
     }
 
@@ -1177,32 +1179,18 @@ private struct SwipeRevealCard<Content: View>: View {
         .opacity(offset < -1 ? 1 : 0)
     }
 
-    private var swipe: some Gesture {
-        DragGesture(minimumDistance: 12)
-            .updating($drag) { value, state, _ in
-                switch state {
-                case .idle:
-                    let dx = value.translation.width, dy = value.translation.height
-                    state = abs(dx) > abs(dy) * 1.2 ? .horizontal(dx) : .vertical
-                case .horizontal:
-                    state = .horizontal(value.translation.width)
-                case .vertical:
-                    break
-                }
+    /// Open or close by where a flick would have carried the card.
+    private func settle(translation: CGFloat, velocity: CGFloat) {
+        let start: CGFloat = isOpen ? -revealWidth : 0
+        let predicted = start + translation + velocity * 0.15
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) {
+            dragX = nil
+            if predicted < -revealWidth / 2 {
+                openID = id
+            } else if isOpen {
+                openID = nil
             }
-            .onEnded { value in
-                let dx = value.translation.width, dy = value.translation.height
-                guard abs(dx) > abs(dy) * 1.2 else { return }
-                let start: CGFloat = isOpen ? -revealWidth : 0
-                let predicted = start + value.predictedEndTranslation.width
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.86)) {
-                    if predicted < -revealWidth / 2 {
-                        openID = id
-                    } else if isOpen {
-                        openID = nil
-                    }
-                }
-            }
+        }
     }
 
     private func close() {
@@ -1221,5 +1209,57 @@ private struct SwipeRevealCard<Content: View>: View {
         withAnimation(.easeOut(duration: 0.35)) { hintOffset = -min(revealWidth, 64) }
         try? await Task.sleep(for: .milliseconds(650))
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { hintOffset = 0 }
+    }
+}
+
+/// The card swipe as a UIKit pan. A SwiftUI DragGesture on every card took
+/// part in each vertical scroll of the library as well and made it stutter;
+/// this pan declines to begin unless the finger moves sideways, and the
+/// library's scroll view only waits for that answer, so a vertical scroll
+/// never reaches the cards at all.
+private struct HorizontalSwipeGesture: UIGestureRecognizerRepresentable {
+    let changed: (CGFloat) -> Void
+    let ended: (_ translation: CGFloat, _ velocity: CGFloat) -> Void
+
+    func makeCoordinator(converter: CoordinateSpaceConverter) -> Coordinator { Coordinator() }
+
+    func makeUIGestureRecognizer(context: Context) -> UIPanGestureRecognizer {
+        let pan = UIPanGestureRecognizer()
+        pan.maximumNumberOfTouches = 1
+        pan.delegate = context.coordinator
+        return pan
+    }
+
+    func handleUIGestureRecognizerAction(_ pan: UIPanGestureRecognizer, context: Context) {
+        let translation = pan.translation(in: pan.view).x
+        switch pan.state {
+        case .began, .changed:
+            changed(translation)
+        case .ended:
+            ended(translation, pan.velocity(in: pan.view).x)
+        case .cancelled, .failed:
+            ended(0, 0)
+        default:
+            break
+        }
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        func gestureRecognizerShouldBegin(_ recognizer: UIGestureRecognizer) -> Bool {
+            guard let pan = recognizer as? UIPanGestureRecognizer else { return false }
+            let velocity = pan.velocity(in: pan.view)
+            let translation = pan.translation(in: pan.view)
+            let dx = abs(velocity.x) + abs(translation.x)
+            let dy = abs(velocity.y) + abs(translation.y)
+            return dx > dy * 1.2
+        }
+
+        /// The scroll view's own pan starts once this one has declined, which
+        /// happens on the same touch for any vertical movement.
+        func gestureRecognizer(_ recognizer: UIGestureRecognizer,
+                               shouldBeRequiredToFailBy other: UIGestureRecognizer) -> Bool {
+            guard let scrollView = other.view as? UIScrollView else { return false }
+            return other === scrollView.panGestureRecognizer
+        }
     }
 }

@@ -326,6 +326,7 @@
 		D49C98DD06AD42D9BD560349 /* CrabrixProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = C17305CBAACACB768E537F24 /* CrabrixProgress.swift */; };
 		D4D661BD52CBBCEA2290672F /* RustToolsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACD874BCD4D6C936B47D0CF /* RustToolsTests.swift */; };
 		D5050F9D62A3048C30A31F67 /* TopicMastery.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA1D24127CCCD6858FC76A21 /* TopicMastery.swift */; };
+		D59BB77DDAAC3DAE5B904268 /* LearnWithAIDesignUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AEB36E53467412A41B290EA3 /* LearnWithAIDesignUITests.swift */; };
 		D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */; };
 		D6CC447FA0E78B0A312CB69A /* ProjectWorkflowTools.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3B8F31B605424785CE3D36 /* ProjectWorkflowTools.swift */; };
 		D70ECFBCDF8636B011990335 /* ProblemReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E15AF611D0815ED4D2805F0C /* ProblemReportTests.swift */; };
@@ -666,6 +667,7 @@
 		AC4745C09CED9CA69999E7B0 /* BuildProblemsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildProblemsTests.swift; sourceTree = "<group>"; };
 		AD3B8F31B605424785CE3D36 /* ProjectWorkflowTools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectWorkflowTools.swift; sourceTree = "<group>"; };
 		AD6A06B3CF1D9DA428CCB401 /* swift-syntax-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "swift-syntax-LICENSE.txt"; sourceTree = "<group>"; };
+		AEB36E53467412A41B290EA3 /* LearnWithAIDesignUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnWithAIDesignUITests.swift; sourceTree = "<group>"; };
 		AF263BC0BDACD405CDF0BAFF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2888F23BE9517E3AC3CA427 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B2D86CD1511B6A01233B4C9B /* wasm-rustc-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "wasm-rustc-LICENSE.txt"; sourceTree = "<group>"; };
@@ -1386,6 +1388,7 @@
 				5CEBD152D5381C70622EDD87 /* BuildWorkspaceTests.swift */,
 				DE1AF72549816139EA476063 /* LearningLinkUITests.swift */,
 				92509975E0A6F8E0AEB9E86F /* LearnLibrarySwipeUITests.swift */,
+				AEB36E53467412A41B290EA3 /* LearnWithAIDesignUITests.swift */,
 				6F09B817D126DD9CA0A7B4C3 /* LearnWithAIUITests.swift */,
 				9889F0283337FBF2D615B9EF /* PlaygroundRuntimeTests.swift */,
 				CF7DB287D36ACF2B45D2CA19 /* PlaygroundTests.swift */,
@@ -1649,6 +1652,7 @@
 				A05F1E60A4E67D0A249A9429 /* BridgeCourseTests.swift in Sources */,
 				D62CE9F33D5CD754B6052DB4 /* BuildWorkspaceTests.swift in Sources */,
 				4B1D2BE75AA5AEABC18AF113 /* LearnLibrarySwipeUITests.swift in Sources */,
+				D59BB77DDAAC3DAE5B904268 /* LearnWithAIDesignUITests.swift in Sources */,
 				5CFBF3B211BA40CE2D797CAC /* LearnWithAIUITests.swift in Sources */,
 				DB2D1A01C9AF4421BE1F3839 /* LearningLinkUITests.swift in Sources */,
 				601D6B01C57DB6E81DE36A68 /* PlaygroundCodec.swift in Sources */,
